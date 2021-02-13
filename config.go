@@ -9,6 +9,7 @@ import (
 )
 
 type Config struct {
+	Concurrency  int                      `json:"concurrency"`
 	Repositories map[string][]*Repository `json:"repositories"`
 }
 
@@ -20,6 +21,7 @@ type Repository struct {
 	Remote       string `json:"remote"`
 	Depth        int    `json:"depth"`
 	IdentityFile string `json:"identity_file"`
+	AddFiles     string `json:"add_files"`
 }
 
 func (me *Repository) Validate() error {
@@ -64,6 +66,10 @@ func (c *Config) LoadYamlBuffer(buf []byte) error {
 }
 
 func (c *Config) FixupConfig() error {
+
+	if c.Concurrency == 0 {
+		c.Concurrency = 5
+	}
 	return nil
 }
 

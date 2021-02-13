@@ -24,10 +24,20 @@ func UpdateRepo(cfg *gc.Config, repo *gc.Repository, done func()) error {
 		}
 	}
 
-	pull := &Pull{cfg, repo}
-	err = pull.Run()
-	if err != nil {
-		return err
+	if repo.AddFiles != "" {
+		addFiles := &AddFiles{cfg, repo}
+		err = addFiles.Run()
+		if err != nil {
+			return err
+		}
+	}
+
+	if repoExists == true {
+		pull := &Pull{cfg, repo}
+		err = pull.Run()
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

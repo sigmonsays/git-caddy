@@ -32,14 +32,18 @@ func main() {
 	if found == false {
 		ExitError("Section not found: %q", section)
 	}
+	log.Debugf("concurrency:%d", cfg.Concurrency)
 
+	ticket := make(chan bool, cfg.Concurrency)
 	var wg sync.WaitGroup
 	donefn := func() {
+		<-ticket
 		wg.Done()
 	}
 
 	for _, repo := range repos {
 		wg.Add(1)
+		ticket <- true
 		go UpdateRepo(cfg, repo, donefn)
 	}
 

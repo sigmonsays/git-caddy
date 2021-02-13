@@ -7,20 +7,20 @@ import (
 	gc "github.com/sigmonsays/git-caddy"
 )
 
-type Pull struct {
+type AddFiles struct {
 	Cfg  *gc.Config
 	Repo *gc.Repository
 }
 
-func (me *Pull) Run() error {
+func (me *AddFiles) Run() error {
 	cmdline := []string{
 		"git",
-		"pull",
+		"add",
 	}
-	log.Tracef("git pull %s", me.Repo.Name)
+	log.Tracef("git add %s: %s", me.Repo.Name, me.Repo.AddFiles)
 
-	cmdline = append(cmdline, me.Repo.Remote)
-	log.Tracef("git pull command %v", cmdline)
+	cmdline = append(cmdline, me.Repo.AddFiles)
+	log.Tracef("git add command %v", cmdline)
 	c := exec.Command(cmdline[0], cmdline[1:]...)
 	c.Stdout = os.Stdout
 	c.Stderr = os.Stderr
