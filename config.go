@@ -18,7 +18,7 @@ type Repository struct {
 	Disabled     bool   `json:"disabled"`
 	Destination  string `json:"destination"`
 	Remote       string `json:"remote"`
-	Depth        string `json:"depth"`
+	Depth        int    `json:"depth"`
 	IdentityFile string `json:"identity_file"`
 }
 

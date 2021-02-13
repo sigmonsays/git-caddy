@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"os/exec"
 
 	gc "github.com/sigmonsays/git-caddy"
@@ -17,7 +18,12 @@ func (me *Pull) Run() error {
 		"pull",
 	}
 	log.Tracef("git pull %s", me.Repo.Name)
+
+	cmdline = append(cmdline, me.Repo.Remote)
+	log.Tracef("git pull command %v", cmdline)
 	c := exec.Command(cmdline[0], cmdline[1:]...)
+	c.Stdout = os.Stdout
+	c.Stderr = os.Stderr
 	err := c.Run()
 	if err != nil {
 		return err
