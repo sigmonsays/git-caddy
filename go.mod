@@ -2,4 +2,8 @@ module github.com/sigmonsays/git-caddy
 
 go 1.15
 
-require github.com/sigmonsays/go-logging v0.0.0-20170415192813-93f4813d2694
+require (
+	github.com/fsnotify/fsnotify v1.4.9
+	github.com/sigmonsays/go-logging v0.0.0-20170415192813-93f4813d2694
+	gopkg.in/yaml.v2 v2.4.0
+)

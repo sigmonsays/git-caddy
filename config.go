@@ -1,12 +1,21 @@
 package gitcaddy
 
-import "fmt"
+import (
+	"bytes"
+	"fmt"
+	"os"
+
+	"gopkg.in/yaml.v2"
+)
 
 type Config struct {
-	Repositories []*Repository `json:"repositories"`
+	Repositories map[string][]*Repository `json:"repositories"`
 }
 
 type Repository struct {
+	Name         string `json:"name"`
+	Description  string `json:"description"`
+	Disabled     bool   `json:"disabled"`
 	Destination  string `json:"destination"`
 	Remote       string `json:"remote"`
 	Depth        string `json:"depth"`
@@ -20,5 +29,49 @@ func (me *Repository) Validate() error {
 	if me.Remote == "" {
 		return fmt.Errorf("remote required")
 	}
+	return nil
+}
+
+func (c *Config) LoadYaml(path string) error {
+	f, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+
+	b := bytes.NewBuffer(nil)
+	_, err = b.ReadFrom(f)
+	if err != nil {
+		return err
+	}
+
+	if err := c.LoadYamlBuffer(b.Bytes()); err != nil {
+		return err
+	}
+
+	if err := c.FixupConfig(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Config) LoadYamlBuffer(buf []byte) error {
+	err := yaml.Unmarshal(buf, c)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Config) FixupConfig() error {
+	return nil
+}
+
+func (c *Config) PrintConfig() error {
+	buf, err := yaml.Marshal(c)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("%s\n", buf)
 	return nil
 }

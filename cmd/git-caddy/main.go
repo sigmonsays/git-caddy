@@ -2,22 +2,47 @@ package main
 
 import (
 	"flag"
-	"fmt"
+	"sync"
 
+	gc "github.com/sigmonsays/git-caddy"
 	gologging "github.com/sigmonsays/go-logging"
 )
 
 func main() {
-
-	loglevel := "info"
-	configfile := "/etc/whatever.yaml"
-	flagvar := 0
-	flag.IntVar(&flagvar, "flagname", 1234, "help message for flagname")
-	flag.StringVar(&configfile, "config", configfile, "specify config file")
+	loglevel := "trace"
+	section := ""
+	configfile := "repositories.yaml"
+	flag.StringVar(&configfile, "f", configfile, "specify config file")
+	flag.StringVar(&section, "s", section, "section in config file")
 	flag.StringVar(&loglevel, "loglevel", loglevel, "log level")
 	flag.Parse()
 
 	gologging.SetLogLevel(loglevel)
 
-	fmt.Printf("Load config from %s\n", configfile)
+	cfg := &gc.Config{}
+
+	err := cfg.LoadYaml(configfile)
+	ExitIfError(err, "LoadYaml %s: %s", configfile, err)
+
+	if log.IsTrace() {
+		cfg.PrintConfig()
+	}
+
+	repos, found := cfg.Repositories[section]
+	if found == false {
+		ExitError("Section not found: %q", section)
+	}
+
+	var wg sync.WaitGroup
+	donefn := func() {
+		wg.Done()
+	}
+
+	for _, repo := range repos {
+		wg.Add(1)
+		go UpdateRepo(cfg, repo, donefn)
+	}
+
+	wg.Wait()
+
 }

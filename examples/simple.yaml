@@ -1,0 +1,5 @@
+repositories:
+  repos:
+   - name: git-caddy
+     remote: git@github.com:sigmonsays/git-caddy.git
+     destination: ./git-caddy
