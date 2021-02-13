@@ -17,7 +17,7 @@ func UpdateRepo(cfg *gc.Config, repo *gc.Repository, done func()) error {
 		repoExists = true
 		isDir = st.IsDir()
 	}
-	log.Tracef("stat %s; isdir:%d", repo.Destination, isDir)
+	log.Tracef("stat %s; isdir:%v", repo.Destination, isDir)
 	if isDir == false {
 		return fmt.Errorf("%s is not a directory", repo.Destination)
 	}
