@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	gc "github.com/sigmonsays/git-caddy"
@@ -9,11 +10,16 @@ import (
 func UpdateRepo(cfg *gc.Config, repo *gc.Repository, done func()) error {
 	log.Debugf("Updating repo %s, remote:%s ", repo.Name, repo.Remote)
 	defer done()
-
 	repoExists := false
-	err := os.Chdir(repo.Destination)
+	isDir := false
+	st, err := os.Stat(repo.Destination)
 	if err == nil {
 		repoExists = true
+		isDir = st.IsDir()
+	}
+	log.Tracef("stat %s; isdir:%d", repo.Destination, isDir)
+	if isDir == false {
+		return fmt.Errorf("%s is not a directory", repo.Destination)
 	}
 
 	if repoExists == false {

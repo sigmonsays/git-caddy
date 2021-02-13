@@ -31,8 +31,8 @@ func (me *Clone) Run() error {
 
 	log.Tracef("git clone command %v", cmdline)
 	c := exec.Command(cmdline[0], cmdline[1:]...)
-	c.Stdout = os.Stdout
-	c.Stderr = os.Stderr
+	c.Stdout = NewPrefixWriter(os.Stdout, me.Repo.Prefix())
+	c.Stderr = NewPrefixWriter(os.Stderr, me.Repo.Prefix())
 
 	if me.Repo.IdentityFile != "" {
 		ssh_command := fmt.Sprintf("ssh -i %s", me.Repo.IdentityFile)

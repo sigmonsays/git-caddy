@@ -16,12 +16,22 @@ type Config struct {
 type Repository struct {
 	Name         string `json:"name"`
 	Description  string `json:"description"`
-	Disabled     bool   `json:"disabled"`
+	Enabled      *bool  `json:"enabled"`
 	Destination  string `json:"destination"`
 	Remote       string `json:"remote"`
 	Depth        int    `json:"depth"`
 	IdentityFile string `json:"identity_file"`
 	AddFiles     string `json:"add_files"`
+}
+
+func (me *Repository) IsEnabled() bool {
+	if me.Enabled == nil {
+		return true
+	}
+	return *me.Enabled
+}
+func (me *Repository) Prefix() string {
+	return fmt.Sprintf("[%s]", me.Name)
 }
 
 func (me *Repository) Validate() error {
