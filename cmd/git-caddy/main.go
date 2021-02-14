@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	loglevel := "trace"
+	loglevel := "info"
 	section := ""
 	configfile := "repositories.yaml"
 	workingdir := ""
