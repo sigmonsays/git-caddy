@@ -27,6 +27,18 @@ func (me *Commit) Run() error {
 	c.Dir = me.Repo.Destination
 	err := c.Run()
 	if err != nil {
+		log.Debugf("commit command error : %s", err)
+
+		var exitcode int
+
+		if c.ProcessState != nil {
+			exitcode = c.ProcessState.ExitCode()
+		}
+		if exitcode == 1 {
+			// no files to commit
+			log.Tracef("treating exit code of 1 for git commit as success")
+			return nil
+		}
 		return err
 	}
 	return nil

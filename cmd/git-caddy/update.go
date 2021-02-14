@@ -60,5 +60,6 @@ func UpdateRepo(cfg *gc.Config, repo *gc.Repository, done func(error)) (err erro
 		}
 	}
 
+	log.Tracef("UpdateRepo %s: finished without error", repo.Name)
 	return nil
 }
