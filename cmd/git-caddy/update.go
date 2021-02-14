@@ -7,9 +7,9 @@ import (
 	gc "github.com/sigmonsays/git-caddy"
 )
 
-func UpdateRepo(cfg *gc.Config, repo *gc.Repository, done func()) error {
+func UpdateRepo(cfg *gc.Config, repo *gc.Repository, done func(error)) (err error) {
 	log.Debugf("Updating repo %s, remote:%s ", repo.Name, repo.Remote)
-	defer done()
+	defer done(err)
 	repoExists := false
 	isDir := false
 	st, err := os.Stat(repo.Destination)
@@ -22,6 +22,8 @@ func UpdateRepo(cfg *gc.Config, repo *gc.Repository, done func()) error {
 		return fmt.Errorf("%s is not a directory", repo.Destination)
 	}
 
+	log.Tracef("repo:%s destination:%s repoExists:%v",
+		repo.Name, repo.Destination, repoExists)
 	if repoExists == false {
 		clone := &Clone{cfg, repo}
 		err = clone.Run()
@@ -41,6 +43,18 @@ func UpdateRepo(cfg *gc.Config, repo *gc.Repository, done func()) error {
 	if repoExists == true {
 		pull := &Pull{cfg, repo}
 		err = pull.Run()
+		if err != nil {
+			return err
+		}
+
+		commit := &Commit{cfg, repo}
+		err = commit.Run()
+		if err != nil {
+			return err
+		}
+
+		push := &Push{cfg, repo}
+		err = push.Run()
 		if err != nil {
 			return err
 		}

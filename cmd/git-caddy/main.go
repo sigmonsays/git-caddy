@@ -18,6 +18,7 @@ func main() {
 	flag.StringVar(&section, "s", section, "section in config file")
 	flag.StringVar(&workingdir, "W", workingdir, "initial working directory")
 	flag.StringVar(&loglevel, "loglevel", loglevel, "log level")
+	flag.StringVar(&loglevel, "l", loglevel, "short for -loglevel")
 	flag.Parse()
 
 	gologging.SetLogLevel(loglevel)
@@ -42,10 +43,18 @@ func main() {
 	}
 	log.Debugf("concurrency:%d", cfg.Concurrency)
 
+	var doneMx sync.Mutex
+	var errors []error
+
 	ticket := make(chan bool, cfg.Concurrency)
 	var wg sync.WaitGroup
-	donefn := func() {
+	donefn := func(err error) {
 		<-ticket
+		if err != nil {
+			doneMx.Lock()
+			errors = append(errors, err)
+			doneMx.Unlock()
+		}
 		wg.Done()
 	}
 
@@ -67,5 +76,14 @@ func main() {
 	}
 
 	wg.Wait()
+
+	if len(errors) == 0 {
+		log.Debugf("Finished with no errors")
+	} else {
+		log.Warnf("%d errors occurred", len(errors))
+		for i, err := range errors {
+			log.Warnf("error #%d: %s", i+1, err)
+		}
+	}
 
 }

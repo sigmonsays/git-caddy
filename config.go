@@ -9,19 +9,19 @@ import (
 )
 
 type Config struct {
-	Concurrency  int                      `json:"concurrency"`
-	Repositories map[string][]*Repository `json:"repositories"`
+	Concurrency  int                      `yaml:"concurrency"`
+	Repositories map[string][]*Repository `yaml:"repositories"`
 }
 
 type Repository struct {
-	Name         string `json:"name"`
-	Description  string `json:"description"`
-	Enabled      *bool  `json:"enabled"`
-	Destination  string `json:"destination"`
-	Remote       string `json:"remote"`
-	Depth        int    `json:"depth"`
-	IdentityFile string `json:"identity_file"`
-	AddFiles     string `json:"add_files"`
+	Name         string `yaml:"name"`
+	Description  string `yaml:"description"`
+	Enabled      *bool  `yaml:"enabled"`
+	Destination  string `yaml:"destination"`
+	Remote       string `yaml:"remote"`
+	Depth        int    `yaml:"depth"`
+	IdentityFile string `yaml:"identity_file"`
+	AddFiles     string `yaml:"add_files"`
 }
 
 func (me *Repository) IsEnabled() bool {
