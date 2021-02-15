@@ -16,6 +16,7 @@ func (me *Pull) Run() error {
 	cmdline := []string{
 		"git",
 		"pull",
+		"-q", "--no-edit", "--all",
 	}
 	log.Tracef("git pull %s", me.Repo.Name)
 
