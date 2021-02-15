@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	gc "github.com/sigmonsays/git-caddy"
 )
@@ -32,7 +33,7 @@ func UpdateRepo(cfg *gc.Config, repo *gc.Repository, done func(error)) (err erro
 		}
 	}
 
-	if repo.AddFiles != "" {
+	if strings.Trim(repo.AddFiles, " ") != "" {
 		addFiles := &AddFiles{cfg, repo}
 		err = addFiles.Run()
 		if err != nil {
@@ -58,6 +59,12 @@ func UpdateRepo(cfg *gc.Config, repo *gc.Repository, done func(error)) (err erro
 		if err != nil {
 			return err
 		}
+	}
+
+	status := &Status{cfg, repo}
+	err = status.Run()
+	if err != nil {
+		return err
 	}
 
 	log.Tracef("UpdateRepo %s: finished without error", repo.Name)

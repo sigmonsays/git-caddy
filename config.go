@@ -30,8 +30,8 @@ func (me *Repository) IsEnabled() bool {
 	}
 	return *me.Enabled
 }
-func (me *Repository) Prefix() string {
-	return fmt.Sprintf("[%s]", me.Name)
+func (me *Repository) Prefix(sub string) string {
+	return fmt.Sprintf("[%s %s", me.Name, sub)
 }
 
 func (me *Repository) Validate() error {

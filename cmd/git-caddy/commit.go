@@ -22,8 +22,8 @@ func (me *Commit) Run() error {
 	log.Tracef("git commit %s", me.Repo.Name)
 	log.Tracef("git commit command %v", cmdline)
 	c := exec.Command(cmdline[0], cmdline[1:]...)
-	c.Stdout = NewPrefixWriter(os.Stdout, me.Repo.Prefix())
-	c.Stderr = NewPrefixWriter(os.Stderr, me.Repo.Prefix())
+	c.Stdout = NewPrefixWriter(os.Stdout, me.Repo.Prefix("commit"))
+	c.Stderr = NewPrefixWriter(os.Stderr, me.Repo.Prefix("commit"))
 	c.Dir = me.Repo.Destination
 	err := c.Run()
 	if err != nil {

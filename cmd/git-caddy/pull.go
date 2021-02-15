@@ -22,8 +22,8 @@ func (me *Pull) Run() error {
 	cmdline = append(cmdline, me.Repo.Remote)
 	log.Tracef("git pull command %v", cmdline)
 	c := exec.Command(cmdline[0], cmdline[1:]...)
-	c.Stdout = NewPrefixWriter(os.Stdout, me.Repo.Prefix())
-	c.Stderr = NewPrefixWriter(os.Stderr, me.Repo.Prefix())
+	c.Stdout = NewPrefixWriter(os.Stdout, me.Repo.Prefix("pull"))
+	c.Stderr = NewPrefixWriter(os.Stderr, me.Repo.Prefix("pull"))
 	c.Dir = me.Repo.Destination
 	err := c.Run()
 	if err != nil {
