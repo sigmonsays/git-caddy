@@ -20,7 +20,6 @@ func (me *Pull) Run() error {
 	}
 	log.Tracef("git pull %s", me.Repo.Name)
 
-	cmdline = append(cmdline, me.Repo.Remote)
 	log.Tracef("git pull command %v", cmdline)
 	c := exec.Command(cmdline[0], cmdline[1:]...)
 	c.Stdout = NewPrefixWriter(os.Stdout, me.Repo.Prefix("pull"))
