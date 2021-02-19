@@ -26,6 +26,7 @@ func (me *AddFiles) Run() error {
 	c.Stdout = NewPrefixWriter(os.Stdout, me.Repo.Prefix("addfiles"))
 	c.Stderr = NewPrefixWriter(os.Stderr, me.Repo.Prefix("addfiles"))
 	c.Dir = me.Repo.Destination
+	c.Env = populateEnv(c.Env, me.Cfg, me.Repo)
 	err := c.Run()
 	if err != nil {
 		return err

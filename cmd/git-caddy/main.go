@@ -60,6 +60,9 @@ func main() {
 
 	var n int
 	for i, repo := range repos {
+		if repo.Section == "" {
+			repo.Section = section
+		}
 		n = i + 1
 		err := repo.Validate()
 		if err != nil {

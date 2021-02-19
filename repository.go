@@ -3,6 +3,7 @@ package gitcaddy
 import "fmt"
 
 type Repository struct {
+	Section      string `yaml:"section"`
 	Name         string `yaml:"name"`
 	Description  string `yaml:"description"`
 	Enabled      *bool  `yaml:"enabled"`

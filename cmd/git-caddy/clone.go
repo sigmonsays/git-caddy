@@ -33,11 +33,7 @@ func (me *Clone) Run() error {
 	c := exec.Command(cmdline[0], cmdline[1:]...)
 	c.Stdout = NewPrefixWriter(os.Stdout, me.Repo.Prefix("clone"))
 	c.Stderr = NewPrefixWriter(os.Stderr, me.Repo.Prefix("clone"))
-
-	if me.Repo.IdentityFile != "" {
-		ssh_command := fmt.Sprintf("ssh -i %s", me.Repo.IdentityFile)
-		c.Env = append(c.Env, "GIT_SSH_COMMAND="+ssh_command)
-	}
+	c.Env = populateEnv(c.Env, me.Cfg, me.Repo)
 
 	err := c.Run()
 	if err != nil {

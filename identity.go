@@ -3,9 +3,10 @@ package gitcaddy
 import "fmt"
 
 type Identity struct {
-	Name     string `yaml:"name"`
-	FullName string `yaml:"full_name"`
-	Email    string `yaml:"email"`
+	Name         string   `yaml:"name"`
+	FullName     string   `yaml:"full_name"`
+	Email        string   `yaml:"email"`
+	Repositories []string `yaml:"repositories"`
 }
 
 func (me *Identity) Validate() error {
