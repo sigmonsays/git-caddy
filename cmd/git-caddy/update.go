@@ -19,7 +19,7 @@ func UpdateRepo(cfg *gc.Config, repo *gc.Repository, done func(error)) (err erro
 		isDir = st.IsDir()
 	}
 	log.Tracef("stat %s; isdir:%v", repo.Destination, isDir)
-	if isDir == false {
+	if err == nil && isDir == false {
 		return fmt.Errorf("%s is not a directory", repo.Destination)
 	}
 
