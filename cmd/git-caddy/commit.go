@@ -25,6 +25,7 @@ func (me *Commit) Run() error {
 	c.Stdout = NewPrefixWriter(os.Stdout, me.Repo.Prefix("commit"))
 	c.Stderr = NewPrefixWriter(os.Stderr, me.Repo.Prefix("commit"))
 	c.Dir = me.Repo.Destination
+	c.Env = populateEnv(c.Env, me.Cfg, me.Repo)
 	err := c.Run()
 	if err != nil {
 		log.Debugf("commit command error : %s", err)

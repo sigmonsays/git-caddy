@@ -24,6 +24,7 @@ func (me *Push) Run() error {
 	c.Stdout = NewPrefixWriter(os.Stdout, me.Repo.Prefix("push"))
 	c.Stderr = NewPrefixWriter(os.Stderr, me.Repo.Prefix("push"))
 	c.Dir = me.Repo.Destination
+	c.Env = populateEnv(c.Env, me.Cfg, me.Repo)
 	err := c.Run()
 	if err != nil {
 		return err
