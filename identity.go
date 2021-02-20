@@ -6,6 +6,7 @@ type Identity struct {
 	Name         string   `yaml:"name"`
 	FullName     string   `yaml:"full_name"`
 	Email        string   `yaml:"email"`
+	IdentityFile string   `yaml:"identity_file"`
 	Repositories []string `yaml:"repositories"`
 }
 

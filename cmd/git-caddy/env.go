@@ -6,13 +6,18 @@ import (
 	gc "github.com/sigmonsays/git-caddy"
 )
 
+func env_GIT_SSH_COMMAND(e []string, identityFile string) []string {
+	ssh_command := fmt.Sprintf("ssh -i %s", identityFile)
+	e = append(e, "GIT_SSH_COMMAND="+ssh_command)
+	return e
+}
+
 func populateEnv(e []string, cfg *gc.Config, r *gc.Repository) []string {
 
 	// see if we need to set the GIT_SSH_COMMAND for a custom identity
 	// IdentityFile overides a higher level config
 	if r.IdentityFile != "" {
-		ssh_command := fmt.Sprintf("ssh -i %s", r.IdentityFile)
-		e = append(e, "GIT_SSH_COMMAND="+ssh_command)
+		e = env_GIT_SSH_COMMAND(e, r.IdentityFile)
 		return e
 	}
 
@@ -24,10 +29,16 @@ func populateEnv(e []string, cfg *gc.Config, r *gc.Repository) []string {
 		}
 	}
 
-	identity, found := idmap[r.section]
+	identity, found := idmap[r.Section]
 	if found == false {
 		return e
 	}
+
+	log.Tracef("Found identity configure for section %s, identity_file %s",
+		r.Section, identity.IdentityFile)
+
+	e = env_GIT_SSH_COMMAND(e, identity.IdentityFile)
+	log.Tracef("env %+v", e)
 
 	return e
 }
