@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"os"
-	"sync"
+	"time"
 
 	gc "github.com/sigmonsays/git-caddy"
 	gologging "github.com/sigmonsays/go-logging"
@@ -14,11 +14,13 @@ func main() {
 	section := ""
 	configfile := "repositories.yaml"
 	workingdir := ""
+	updateInterval := 0
 	flag.StringVar(&configfile, "c", configfile, "specify config file")
 	flag.StringVar(&section, "s", section, "section in config file")
 	flag.StringVar(&workingdir, "W", workingdir, "initial working directory")
 	flag.StringVar(&loglevel, "loglevel", loglevel, "log level")
 	flag.StringVar(&loglevel, "l", loglevel, "short for -loglevel")
+	flag.IntVar(&updateInterval, "I", updateInterval, "pull upstream for changes")
 	flag.Parse()
 
 	gologging.SetLogLevel(loglevel)
@@ -43,49 +45,26 @@ func main() {
 	}
 	log.Debugf("concurrency:%d", cfg.Concurrency)
 
-	var doneMx sync.Mutex
-	var errors []error
-
-	ticket := make(chan bool, cfg.Concurrency)
-	var wg sync.WaitGroup
-	donefn := func(err error) {
-		<-ticket
-		if err != nil {
-			doneMx.Lock()
-			errors = append(errors, err)
-			doneMx.Unlock()
-		}
-		wg.Done()
+	updateRun := &UpdateRepositories{
+		Section:      section,
+		Cfg:          cfg,
+		Repositories: repos,
 	}
 
-	var n int
-	for i, repo := range repos {
-		if repo.Section == "" {
-			repo.Section = section
-		}
-		n = i + 1
-		err := repo.Validate()
-		if err != nil {
-			log.Warnf("repo #%d: %s failed validation: %s", n, repo.Name, err)
-			continue
-		}
-		if repo.IsEnabled() == false {
-			log.Debugf("repo %s is disabled", repo.Name)
-			continue
-		}
-		wg.Add(1)
-		ticket <- true
-		go UpdateRepo(cfg, repo, donefn)
+	if updateInterval == 0 {
+		err = updateRun.Run()
+		ExitIfError(err, "%s", err)
 	}
 
-	wg.Wait()
-
-	if len(errors) == 0 {
-		log.Debugf("Finished with no errors")
-	} else {
-		log.Warnf("%d errors occurred", len(errors))
-		for i, err := range errors {
-			log.Warnf("error #%d: %s", i+1, err)
+	tick := time.NewTicker(time.Duration(updateInterval) * time.Second)
+	defer tick.Stop()
+	for {
+		select {
+		case <-tick.C:
+			err = updateRun.Run()
+			if err != nil {
+				log.Warnf("%s", err)
+			}
 		}
 	}
 
