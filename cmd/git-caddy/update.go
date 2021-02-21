@@ -4,9 +4,64 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 
 	gc "github.com/sigmonsays/git-caddy"
 )
+
+type UpdateRepositories struct {
+	Section      string
+	Cfg          *gc.Config
+	Repositories []*gc.Repository
+}
+
+func (me *UpdateRepositories) Run() error {
+	var doneMx sync.Mutex
+	var errors []error
+	ticket := make(chan bool, me.Cfg.Concurrency)
+	var wg sync.WaitGroup
+	donefn := func(err error) {
+		<-ticket
+		if err != nil {
+			doneMx.Lock()
+			errors = append(errors, err)
+			doneMx.Unlock()
+		}
+		wg.Done()
+	}
+
+	var n int
+	for i, repo := range me.Repositories {
+		if repo.Section == "" {
+			repo.Section = me.Section
+		}
+		n = i + 1
+		err := repo.Validate()
+		if err != nil {
+			log.Warnf("repo #%d: %s failed validation: %s", n, repo.Name, err)
+			continue
+		}
+		if repo.IsEnabled() == false {
+			log.Debugf("repo %s is disabled", repo.Name)
+			continue
+		}
+		wg.Add(1)
+		ticket <- true
+		go UpdateRepo(me.Cfg, repo, donefn)
+	}
+
+	wg.Wait()
+
+	if len(errors) == 0 {
+		log.Debugf("Finished with no errors")
+	} else {
+		log.Warnf("%d errors occurred", len(errors))
+		for i, err := range errors {
+			log.Warnf("error #%d: %s", i+1, err)
+		}
+	}
+	return nil
+}
 
 func UpdateRepo(cfg *gc.Config, repo *gc.Repository, done func(error)) (err error) {
 	log.Debugf("Updating repo %s, remote:%s ", repo.Name, repo.Remote)
