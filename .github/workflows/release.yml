@@ -102,7 +102,7 @@ jobs:
   create-release:
     runs-on: ubuntu-latest
     needs:
-      - build-artifact
+      #- build-artifact
       - build-linux-packages
     steps:
       - uses: actions/checkout@v1
