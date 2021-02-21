@@ -1,9 +1,11 @@
 name: release
 
 on:
+  # push:
+  #   tags:
+  #     - 'v*.*.*'
   push:
-    tags:
-      - 'v*.*.*'
+    branches: [ testing ]
 
 env:
   APP_NAME: 'git-caddy'
@@ -53,11 +55,17 @@ jobs:
         with:
           go-version: 1.15
 
-      - name: Build
-        run: go build -v ./...
+      - name: List and debug
+        run: |
+          go env
+          pwd
+          ls
 
-      - name: Test
-        run: go test -v ./...
+      - name: Build
+        run: |
+          go build -v ./...
+          mkdir -p .debpkg/bin
+          cp $(go env GOPATH)/bin/git-caddy .debpkg/bin
 
       - uses: jiro4989/build-deb-action@v2
         with:
