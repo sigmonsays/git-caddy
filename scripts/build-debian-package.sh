@@ -24,11 +24,13 @@ apt-get install -y --no-install-recommends ca-certificates \
 # Install go
 # https://golang.org/dl/go1.16.linux-amd64.tar.gz
 curl https://golang.org/dl/go1.16.linux-amd64.tar.gz | tar -C /usr/local -xzf -
+export PATH=$PATH:/usr/local/go/bin
 
 # Install deps to build.
 mk-build-deps --install --remove \
   --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' \
   "${BASE_DIR}/debian/control"
+
 
 fakeroot debian/rules clean
 fakeroot debian/rules build
