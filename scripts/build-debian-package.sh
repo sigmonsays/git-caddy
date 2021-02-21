@@ -23,7 +23,7 @@ apt-get install -y --no-install-recommends ca-certificates \
 
 # Install go
 # https://golang.org/dl/go1.16.linux-amd64.tar.gz
-curl https://golang.org/dl/go1.16.linux-amd64.tar.gz | tar -C /usr/local -xzf -
+curl -L https://golang.org/dl/go1.16.linux-amd64.tar.gz | tar -C /usr/local -xzf -
 export PATH=$PATH:/usr/local/go/bin
 
 # Install deps to build.
