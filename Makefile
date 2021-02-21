@@ -36,4 +36,4 @@ $(addprefix installbin-, $(GO_BINS)):
 	cp -v $(GOBIN)/$(BIN) $(DESTDIR)/$(INSTALL_PREFIX)/bin/
 
 clean:
-	$(MAKE) -C bindata clean
+	$(MAKE) -C clean
