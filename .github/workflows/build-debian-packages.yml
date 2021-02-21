@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Build debian package
-        uses: sigmonsays/dpkg-buildpackage
+        uses: sigmonsays/dpkg-buildpackage@master
 
       - name: Upload result
         uses: actions/upload-artifact@v2
