@@ -46,10 +46,10 @@ jobs:
   #           dist/*.zip
 
   build-linux-packages:
-    runs-on: ubuntu-latest
+    #runs-on: ubuntu-latest
+    runs-on: klokantech/dpkg-buildpackage
     steps:
       - uses: actions/checkout@v1
-
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
@@ -64,27 +64,7 @@ jobs:
       - name: Build
         run: |
           go install github.com/sigmonsays/git-caddy/...
-          mkdir -p .debpkg/bin
-          cp -v $(go env GOPATH)/bin/git-caddy .debpkg/bin
-
-      - uses: jiro4989/build-deb-action@v2
-        with:
-          package: ${{ env.APP_NAME }}
-          package_root: .debpkg
-          maintainer: ${{ env.MAINTAINER }}
-          version: ${{ github.ref }}
-          arch: 'amd64'
-          desc: '${{ env.DESC }}'
-
-      # - uses: jiro4989/build-rpm-action@v2
-      #   with:
-      #     summary: '${{ env.DESC }}'
-      #     package: ${{ env.APP_NAME }}
-      #     package_root: .rpmpkg
-      #     maintainer: ${{ env.MAINTAINER }}
-      #     version: ${{ github.ref }}
-      #     arch: 'x86_64'
-      #     desc: '${{ env.DESC }}'
+          dpkg-buildpackage
 
       - uses: actions/upload-artifact@v2
         with:
@@ -92,28 +72,20 @@ jobs:
           path: |
             ./*.deb
 
-      # - uses: actions/upload-artifact@v2
-      #   with:
-      #     name: artifact-rpm
-      #     path: |
-      #       ./*.rpm
-      #       !./*-debuginfo-*.rpm
-
   create-release:
     runs-on: ubuntu-latest
     needs:
-      #- build-artifact
       - build-linux-packages
     steps:
       - uses: actions/checkout@v1
-      - name: Generate changelog
+      - name: generate changelog
         run: |
           wget https://github.com/git-chglog/git-chglog/releases/download/0.9.1/git-chglog_linux_amd64
           chmod +x git-chglog_linux_amd64
           mv git-chglog_linux_amd64 git-chglog
           ./git-chglog --output ./changelog $(git describe --tags $(git rev-list --tags --max-count=1))
 
-      - name: Create Release
+      - name: create release
         id: create-release
         uses: actions/create-release@v1
         env:
@@ -177,8 +149,6 @@ jobs:
         include:
           - pkg: deb
             asset_content_type: application/vnd.debian.binary-package
-          - pkg: rpm
-            asset_content_type: application/x-rpm
     steps:
       - uses: actions/download-artifact@v2
         with:
