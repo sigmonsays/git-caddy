@@ -3,5 +3,4 @@ multi device git synchronization tool
 
 # git-caddy
 
-
-a package is built in the release
+a binary .deb package is built in the release
