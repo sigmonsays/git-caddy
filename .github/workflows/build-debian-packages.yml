@@ -2,7 +2,7 @@ name: Build debian package (.deb)
 
 on:
   push:
-    branches: [ testing2 ]
+    branches: [ master ]
 
 jobs:
 
