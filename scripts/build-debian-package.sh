@@ -35,3 +35,8 @@ mk-build-deps --install --remove \
 fakeroot debian/rules clean
 fakeroot debian/rules build
 fakeroot debian/rules binary
+
+pwd
+mkdir -p artifact
+cp -v ../*.deb ./artifact/
+ls -l ./artifact/
