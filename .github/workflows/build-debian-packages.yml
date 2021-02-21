@@ -3,6 +3,7 @@ name: Build debian packages
 on:
   push:
     branches: [ master ]
+    tags: [ '*' ]
 
 jobs:
 
