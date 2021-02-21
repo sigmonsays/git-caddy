@@ -18,12 +18,12 @@ git-caddy (${VERSION}) unstable; urgency=medium
 EOF
 
 apt-get update
-apt-get install -y --no-install-recommends apt-transport-https ca-certificates \
-    gnupg software-properties-common wget
+apt-get install -y --no-install-recommends ca-certificates \
+    curl
 
 # Install go
 # https://golang.org/dl/go1.16.linux-amd64.tar.gz
-
+curl https://golang.org/dl/go1.16.linux-amd64.tar.gz | tar -C /usr/local -xzf -
 
 # Install deps to build.
 mk-build-deps --install --remove \
