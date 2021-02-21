@@ -2,8 +2,7 @@ name: Build debian packages
 
 on:
   push:
-    branches: [ master ]
-    tags: [ '*' ]
+    branches: [ testing2 ]
 
 jobs:
 
@@ -14,11 +13,10 @@ jobs:
         codename: [focal]
     steps:
       - uses: actions/checkout@v2
+
       - name: Build debian package
-        uses: link-u/execute-on-separated-ubuntu@master
-        with:
-          script: scripts/build-debian-package.sh
-          on: ${{ matrix.codename }}
+        uses: sigmonsays/dpkg-buildpackage
+
       - name: Upload result
         uses: actions/upload-artifact@v2
         with:
