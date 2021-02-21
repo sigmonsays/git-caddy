@@ -6,8 +6,8 @@ cd ${BASE_DIR}
 
 # Generate changelog
 git_describe="$(git describe --tags)"
-VERSION=${git_describe:1}.$(TZ=JST-9 date +%Y%m%d)+$(lsb_release -cs)
-DATE=$(LC_ALL=C TZ=JST-9 date '+%a, %d %b %Y %H:%M:%S %z')
+VERSION=${git_describe:1}.$(date +%Y%m%d)+$(lsb_release -cs)
+DATE=$(LC_ALL=C date '+%a, %d %b %Y %H:%M:%S %z')
 
 cat <<EOF > "${BASE_DIR}/debian/changelog"
 git-caddy (${VERSION}) unstable; urgency=medium
