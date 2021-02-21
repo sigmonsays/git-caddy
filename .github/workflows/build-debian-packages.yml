@@ -20,7 +20,7 @@ jobs:
       # - run: go version
 
       - name: Build debian package
-        uses: sigmonsays/dpkg-buildpackage@master
+        uses: sigmonsays/dpkg-buildpackage-go@master
 
       - name: Upload result
         uses: actions/upload-artifact@v2
