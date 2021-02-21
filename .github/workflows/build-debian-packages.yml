@@ -14,9 +14,6 @@ jobs:
         codename: [focal]
     steps:
       - uses: actions/checkout@v2
-        with:
-          submodules: 'recursive'
-          fetch-depth: 0
       - name: Build debian package
         uses: link-u/execute-on-separated-ubuntu@master
         with:
