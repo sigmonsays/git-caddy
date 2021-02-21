@@ -63,9 +63,9 @@ jobs:
 
       - name: Build
         run: |
-          go build -v ./...
+          go install github.com/sigmonsays/git-caddy/...
           mkdir -p .debpkg/bin
-          cp $(go env GOPATH)/bin/git-caddy .debpkg/bin
+          cp -v $(go env GOPATH)/bin/git-caddy .debpkg/bin
 
       - uses: jiro4989/build-deb-action@v2
         with:
