@@ -28,10 +28,12 @@ jobs:
           pwd
           ls
 
-      - name: Build
+      - name: Compile
         run: |
           go install github.com/sigmonsays/git-caddy/...
-          dpkg-buildpackage
+
+      - name: Build Debian package
+        uses: dawidd6/action-debian-package@v1
 
       - uses: actions/upload-artifact@v2
         with:
