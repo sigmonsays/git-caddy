@@ -74,7 +74,7 @@ jobs:
         run: find
 
       - name: Get Name of Artifact
-          run: |
+        run: |
             ARTIFACT_PATHNAME=$(ls ${{ matrix.codename }}/*.deb | head -n 1)
             ARTIFACT_NAME=$(basename $ARTIFACT_PATHNAME)
             echo ::set-env name=ARTIFACT_NAME::${ARTIFACT_NAME}
