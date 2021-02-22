@@ -74,3 +74,4 @@ jobs:
           upload_url: ${{ needs.release.outputs.upload_url }}
           asset_path: ${{ matrix.codename }}.deb
           asset_name: ${{ matrix.codename }}.deb
+          asset_content_type: application/deb
