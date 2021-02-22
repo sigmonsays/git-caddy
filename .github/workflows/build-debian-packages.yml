@@ -24,12 +24,6 @@ jobs:
           name: ${{ matrix.codename }}
           path: |
             **/*.deb
-      - name: Inspect disk usage
-        shell: bash
-        run: |
-          pwd
-          ls -l **/*.deb
-          du -sh .
 
   test:
     needs: build
