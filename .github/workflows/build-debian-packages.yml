@@ -28,7 +28,7 @@ jobs:
         shell: bash
         run: |
           pwd
-          find focal
+          ls -l **/*.deb
           du -sh .
 
   test:
