@@ -54,6 +54,7 @@ func main() {
 	if updateInterval == 0 {
 		err = updateRun.Run()
 		ExitIfError(err, "%s", err)
+		return
 	}
 
 	tick := time.NewTicker(time.Duration(updateInterval) * time.Second)
