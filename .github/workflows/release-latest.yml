@@ -1,5 +1,7 @@
+# a job which builds the latest version
+# Must tag latest and push
 # Docs https://github.com/marketplace/actions/go-release-binaries
-name: release go binaries
+name: release latest go binaries
 on:
    push:
      branches: [ master ]
