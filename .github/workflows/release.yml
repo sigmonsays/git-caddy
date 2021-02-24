@@ -1,8 +1,8 @@
 # Docs https://github.com/marketplace/actions/go-release-binaries
 name: release go binaries
 on:
-  # push:
-  #    tags: [ 'v*', 'latest' ]
+   push:
+      tags: [ 'v*' ]
   release:
     types: [created]
 
