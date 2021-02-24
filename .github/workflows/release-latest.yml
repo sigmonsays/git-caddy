@@ -22,4 +22,5 @@ jobs:
         goos: ${{ matrix.goos }}
         goarch: ${{ matrix.goarch }}
         overwrite: true
+        release_tag: latest
         asset_name: git-caddy-latest-${{ matrix.goos }}-${{ matrix.goarch }}
