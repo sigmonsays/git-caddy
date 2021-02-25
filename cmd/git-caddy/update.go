@@ -35,8 +35,12 @@ func (me *UpdateRepositories) Run() error {
 		if repo.Section == "" {
 			repo.Section = me.Section
 		}
+		err := repo.Defaults()
+		if err != nil {
+			log.Debugf("repo #%d: %s failed setting defaults: %s", n, repo.Name, err)
+		}
 		n = i + 1
-		err := repo.Validate()
+		err = repo.Validate()
 		if err != nil {
 			log.Warnf("repo #%d: %s failed validation: %s", n, repo.Name, err)
 			continue
