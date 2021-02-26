@@ -20,7 +20,7 @@ func main() {
 	flag.StringVar(&workingdir, "W", workingdir, "initial working directory")
 	flag.StringVar(&loglevel, "loglevel", loglevel, "log level")
 	flag.StringVar(&loglevel, "l", loglevel, "short for -loglevel")
-	flag.IntVar(&updateInterval, "I", updateInterval, "pull upstream for changes")
+	flag.IntVar(&updateInterval, "I", updateInterval, "pull upstream for changes on an interval")
 	flag.Parse()
 
 	gologging.SetLogLevel(loglevel)
