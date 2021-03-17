@@ -11,6 +11,9 @@
 - Allow screenshot name to be given on input
   - prepend/append name to date string?
 
+- show status of repositories and dont update
+  git-caddy -X status
+
 - Implement ability to shorten repository specification even more
 
     repositories_group:
