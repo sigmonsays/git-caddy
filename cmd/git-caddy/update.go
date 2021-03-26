@@ -82,9 +82,9 @@ func UpdateRepo(cfg *gc.Config, repo *gc.Repository, done func(error)) (err erro
 		return fmt.Errorf("%s is not a directory", repo.Destination)
 	}
 
-	log.Tracef("repo:%s destination:%s repoExists:%v",
-		repo.Name, repo.Destination, repoExists)
-	if repoExists == false {
+	log.Tracef("repo:%s destination:%s repoExists:%v noClone:%v",
+		repo.Name, repo.Destination, repoExists, repo.NoClone)
+	if repoExists == false && repo.NoClone == false {
 		clone := &Clone{cfg, repo}
 		err = clone.Run()
 		if err != nil {
