@@ -18,6 +18,7 @@ type Repository struct {
 	Depth        int    `yaml:"depth"`
 	IdentityFile string `yaml:"identity_file"`
 	AddFiles     string `yaml:"add_files"`
+	NoClone      bool   `yaml:"no_clone"`
 }
 
 func (me *Repository) IsEnabled() bool {
