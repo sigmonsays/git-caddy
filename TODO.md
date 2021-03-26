@@ -5,9 +5,6 @@
   - optional behavior, log only if parameter is in yaml
   - use rotating logger, ability to set rotate sizes
 
-- Allow screenshot name to be given on input
-  - prepend/append name to date string?
-
 - show status of repositories and dont update
   git-caddy -X status
 
