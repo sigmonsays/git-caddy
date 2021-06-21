@@ -17,6 +17,9 @@ func (me *Push) Run() error {
 		"git",
 		"push",
 	}
+	if me.Cfg.Verbose == false {
+		cmdline = append(cmdline, "-q")
+	}
 	log.Tracef("git push %s", me.Repo.Name)
 
 	log.Tracef("git push command %v", cmdline)
