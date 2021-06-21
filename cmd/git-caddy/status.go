@@ -17,6 +17,9 @@ func (me *Status) Run() error {
 		"git",
 		"status",
 	}
+	if me.Cfg.Verbose == false {
+		cmdline = append(cmdline, "-s")
+	}
 	log.Tracef("git status %s", me.Repo.Name)
 	log.Tracef("git status command %v", cmdline)
 	c := exec.Command(cmdline[0], cmdline[1:]...)
