@@ -70,6 +70,11 @@ func main() {
 			if e.Section != "" {
 				opts.Section = e.Section
 			}
+			if e.Def.WorkingDir != "" {
+				workingdir := os.ExpandEnv(e.Def.WorkingDir)
+				log.Tracef("chdir %s", workingdir)
+				os.Chdir(workingdir)
+			}
 			err = runRepositoryFile(opts, e.Filename)
 			if err != nil {
 				log.Errorf("run %s: %s", e.Filename, err)

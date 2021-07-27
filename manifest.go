@@ -14,10 +14,12 @@ type ManifestConfig struct {
 	RepositoryFiles []*ManifestDef `yaml:"repository_files"`
 }
 type ManifestDef struct {
-	Pattern  string
-	Sections string
+	Pattern    string
+	Sections   string
+	WorkingDir string `yaml:"dir"`
 }
 type ManifestEntry struct {
+	Def      *ManifestDef
 	Filename string
 	Section  string
 }
@@ -70,7 +72,8 @@ func (c *ManifestConfig) Print() error {
 func (c *ManifestConfig) ListManifest() []*ManifestEntry {
 	var ret []*ManifestEntry
 	for _, e := range c.RepositoryFiles {
-		matches, err := filepath.Glob(e.Pattern)
+		pattern := os.ExpandEnv(e.Pattern)
+		matches, err := filepath.Glob(pattern)
 		log.Tracef("glob %s got %d matches", e.Pattern, len(matches))
 		if err != nil {
 			log.Warnf("Glob %s: %s", e.Pattern, err)
@@ -79,10 +82,11 @@ func (c *ManifestConfig) ListManifest() []*ManifestEntry {
 		for _, match := range matches {
 			sections := strings.Fields(e.Sections)
 			for _, section := range sections {
-				e := &ManifestEntry{}
-				e.Filename = match
-				e.Section = section
-				ret = append(ret, e)
+				ent := &ManifestEntry{}
+				ent.Filename = match
+				ent.Section = section
+				ent.Def = e
+				ret = append(ret, ent)
 			}
 		}
 	}
