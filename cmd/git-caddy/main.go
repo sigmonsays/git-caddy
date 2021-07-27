@@ -2,62 +2,118 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
+	"path/filepath"
 	"time"
 
 	gc "github.com/sigmonsays/git-caddy"
 	gologging "github.com/sigmonsays/go-logging"
 )
 
+type Options struct {
+	LogLevel       string
+	Section        string
+	ConfigFile     string
+	ManifestFile   string
+	WorkingDir     string
+	UpdateInterval int
+	Action         string
+}
+
 func main() {
-	loglevel := "info"
-	section := ""
-	configfile := "repositories.yaml"
-	workingdir := ""
-	updateInterval := 0
-	flag.StringVar(&configfile, "c", configfile, "specify config file")
-	flag.StringVar(&section, "s", section, "section in config file")
-	flag.StringVar(&workingdir, "W", workingdir, "initial working directory")
-	flag.StringVar(&loglevel, "loglevel", loglevel, "log level")
-	flag.StringVar(&loglevel, "l", loglevel, "short for -loglevel")
-	flag.IntVar(&updateInterval, "I", updateInterval, "pull upstream for changes on an interval")
+	opts := &Options{
+		LogLevel:       "info",
+		Section:        "",
+		ConfigFile:     "repositories.yaml",
+		ManifestFile:   filepath.Join(os.Getenv("HOME"), ".git-caddy.yaml"),
+		WorkingDir:     "",
+		UpdateInterval: 0,
+		Action:         "config",
+	}
+	flag.StringVar(&opts.Action, "a", opts.Action, "specify processing actions (manfiest or config)")
+	flag.StringVar(&opts.ConfigFile, "c", opts.ConfigFile, "specify config file")
+	flag.StringVar(&opts.Section, "s", opts.Section, "section in config file")
+	flag.StringVar(&opts.WorkingDir, "W", opts.WorkingDir, "initial working directory")
+	flag.StringVar(&opts.LogLevel, "loglevel", opts.LogLevel, "log level")
+	flag.StringVar(&opts.LogLevel, "l", opts.LogLevel, "short for -loglevel")
+	flag.IntVar(&opts.UpdateInterval, "I", opts.UpdateInterval, "pull upstream for changes on an interval")
+	flag.StringVar(&opts.ManifestFile, "m", opts.ManifestFile, "manifest file")
 	flag.Parse()
 
-	gologging.SetLogLevel(loglevel)
+	gologging.SetLogLevel(opts.LogLevel)
 
-	cfg := &gc.Config{}
+	var err error
 
-	if workingdir != "" {
-		err := os.Chdir(workingdir)
-		ExitIfError(err, "Chdir %s: %s", workingdir, err)
+	manifest := &gc.ManifestConfig{}
+	if gc.FileExists(opts.ManifestFile) {
+		err = manifest.LoadYaml(opts.ManifestFile)
+		ExitIfError(err, "LoadYaml %s: %s", opts.ManifestFile, err)
 	}
 
+	if opts.WorkingDir != "" {
+		err = os.Chdir(opts.WorkingDir)
+		ExitIfError(err, "Chdir %s: %s", opts.WorkingDir, err)
+	}
+
+	if opts.Action == "config" {
+		if gc.FileExists(opts.ConfigFile) {
+			err = runRepositoryFile(opts, opts.ConfigFile)
+			ExitIfError(err, "run %s: %s", opts.ConfigFile, err)
+		}
+	}
+
+	if opts.Action == "manifest" {
+		files := manifest.ListManifest()
+		log.Tracef("loaded %d files using manifest from %s", len(files), opts.ManifestFile)
+		for _, e := range files {
+			if e.Section != "" {
+				opts.Section = e.Section
+			}
+			if e.Def.WorkingDir != "" {
+				workingdir := os.ExpandEnv(e.Def.WorkingDir)
+				log.Tracef("chdir %s", workingdir)
+				os.Chdir(workingdir)
+			}
+			err = runRepositoryFile(opts, e.Filename)
+			if err != nil {
+				log.Errorf("run %s: %s", e.Filename, err)
+			}
+		}
+	}
+}
+
+func runRepositoryFile(opts *Options, configfile string) error {
+	cfg := &gc.Config{}
+
+	log.Infof("run repository file:%s section:%s", configfile, opts.Section)
 	err := cfg.LoadYaml(configfile)
-	ExitIfError(err, "LoadYaml %s: %s", configfile, err)
+	if err != nil {
+		return err
+	}
 
 	if log.IsTrace() {
 		cfg.PrintConfig()
 	}
 
-	repos, found := cfg.Repositories[section]
+	repos, found := cfg.Repositories[opts.Section]
 	if found == false {
-		ExitError("Section not found: %q", section)
+		return fmt.Errorf("Section not found: %q", opts.Section)
 	}
 	log.Debugf("concurrency:%d", cfg.Concurrency)
 
 	updateRun := &UpdateRepositories{
-		Section:      section,
+		Section:      opts.Section,
 		Cfg:          cfg,
 		Repositories: repos,
 	}
 
-	if updateInterval == 0 {
+	if opts.UpdateInterval == 0 {
 		err = updateRun.Run()
-		ExitIfError(err, "%s", err)
-		return
+		return err
 	}
 
-	tick := time.NewTicker(time.Duration(updateInterval) * time.Second)
+	tick := time.NewTicker(time.Duration(opts.UpdateInterval) * time.Second)
 	defer tick.Stop()
 	for {
 		select {
