@@ -9,16 +9,17 @@ import (
 )
 
 type Repository struct {
-	Section      string `yaml:"section"`
-	Name         string `yaml:"name"`
-	Description  string `yaml:"description"`
-	Enabled      *bool  `yaml:"enabled"`
-	Destination  string `yaml:"destination"`
-	Remote       string `yaml:"remote"`
-	Depth        int    `yaml:"depth"`
-	IdentityFile string `yaml:"identity_file"`
-	AddFiles     string `yaml:"add_files"`
-	NoClone      bool   `yaml:"no_clone"`
+	Section      string   `yaml:"section"`
+	Name         string   `yaml:"name"`
+	Description  string   `yaml:"description"`
+	Enabled      *bool    `yaml:"enabled"`
+	Destination  string   `yaml:"destination"`
+	Remote       string   `yaml:"remote"`
+	Depth        int      `yaml:"depth"`
+	IdentityFile string   `yaml:"identity_file"`
+	AddFiles     string   `yaml:"add_files"`
+	NoClone      bool     `yaml:"no_clone"`
+	Children     []string `yaml:"children"`
 }
 
 func (me *Repository) IsEnabled() bool {
@@ -68,4 +69,10 @@ func (me *Repository) Validate() error {
 		return fmt.Errorf("remote required")
 	}
 	return nil
+}
+
+func (me *Repository) Duplicate() *Repository {
+	var c Repository
+	c = *me
+	return &c
 }
