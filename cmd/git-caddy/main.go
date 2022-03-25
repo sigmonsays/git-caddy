@@ -19,6 +19,8 @@ type Options struct {
 	WorkingDir     string
 	UpdateInterval int
 	Action         string
+
+	summary *RunSummary
 }
 
 func main() {
@@ -44,6 +46,8 @@ func main() {
 	gologging.SetLogLevel(opts.LogLevel)
 
 	var err error
+
+	opts.summary = &RunSummary{}
 
 	manifest := &gc.ManifestConfig{}
 	if gc.FileExists(opts.ManifestFile) {
@@ -81,6 +85,9 @@ func main() {
 			}
 		}
 	}
+
+	s := opts.summary
+	log.Infof("scanned:%d errors:%d", s.Scanned, s.Errors)
 }
 
 func runRepositoryFile(opts *Options, configfile string) error {
@@ -106,6 +113,7 @@ func runRepositoryFile(opts *Options, configfile string) error {
 		Section:      opts.Section,
 		Cfg:          cfg,
 		Repositories: repos,
+		summary:      opts.summary,
 	}
 
 	if opts.UpdateInterval == 0 {

@@ -13,6 +13,8 @@ type UpdateRepositories struct {
 	Section      string
 	Cfg          *gc.Config
 	Repositories []*gc.Repository
+
+	summary *RunSummary
 }
 
 func (me *UpdateRepositories) Run() error {
@@ -32,6 +34,7 @@ func (me *UpdateRepositories) Run() error {
 
 	var n int
 	for i, repo := range me.Repositories {
+
 		if repo.Section == "" {
 			repo.Section = me.Section
 		}
@@ -51,7 +54,7 @@ func (me *UpdateRepositories) Run() error {
 		}
 		wg.Add(1)
 		ticket <- true
-		go UpdateRepo(me.Cfg, repo, donefn)
+		go UpdateRepo(me.Cfg, repo, donefn, me.summary)
 	}
 
 	wg.Wait()
@@ -67,9 +70,16 @@ func (me *UpdateRepositories) Run() error {
 	return nil
 }
 
-func UpdateRepo(cfg *gc.Config, repo *gc.Repository, done func(error)) (err error) {
+func UpdateRepo(cfg *gc.Config, repo *gc.Repository, done func(error), summary *RunSummary) (err error) {
+	summary.IncrScanned()
+
 	log.Debugf("Updating repo %s, remote:%s ", repo.Name, repo.Remote)
-	defer done(err)
+	defer func() {
+		done(err)
+		if err != nil {
+			summary.IncrErrors()
+		}
+	}()
 	repoExists := false
 	isDir := false
 	st, err := os.Stat(repo.Destination)
