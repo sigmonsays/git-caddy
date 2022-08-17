@@ -9,18 +9,34 @@ import (
 )
 
 type Repository struct {
-	Section      string `yaml:"section"`
-	Name         string `yaml:"name"`
-	Description  string `yaml:"description"`
-	Enabled      *bool  `yaml:"enabled"`
-	Destination  string `yaml:"destination"`
-	Remote       string `yaml:"remote"`
-	Depth        int    `yaml:"depth"`
-	IdentityFile string `yaml:"identity_file"`
-	AddFiles     string `yaml:"add_files"`
-	NoClone      bool   `yaml:"no_clone"`
+	Section      string   `yaml:"section"`
+	Name         string   `yaml:"name"`
+	Names        []string `yaml:"names"`
+	Description  string   `yaml:"description"`
+	Enabled      *bool    `yaml:"enabled"`
+	Destination  string   `yaml:"destination"`
+	Remote       string   `yaml:"remote"`
+	Depth        int      `yaml:"depth"`
+	IdentityFile string   `yaml:"identity_file"`
+	AddFiles     string   `yaml:"add_files"`
+	NoClone      bool     `yaml:"no_clone"`
 }
 
+func (me *Repository) Copy() *Repository {
+	cp := &Repository{}
+	cp.Section = me.Section
+	cp.Name = me.Name
+	cp.Names = me.Names
+	cp.Description = me.Description
+	cp.Enabled = me.Enabled
+	cp.Destination = me.Destination
+	cp.Remote = me.Remote
+	cp.Depth = me.Depth
+	cp.IdentityFile = me.IdentityFile
+	cp.AddFiles = me.AddFiles
+	cp.NoClone = me.NoClone
+	return cp
+}
 func (me *Repository) IsEnabled() bool {
 	if me.Enabled == nil {
 		return true
