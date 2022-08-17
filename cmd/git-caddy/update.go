@@ -52,9 +52,28 @@ func (me *UpdateRepositories) Run() error {
 			log.Debugf("repo %s is disabled", repo.Name)
 			continue
 		}
-		wg.Add(1)
-		ticket <- true
-		go UpdateRepo(me.Cfg, repo, donefn, me.summary)
+
+		var repos []*gc.Repository
+
+		if len(repo.Names) > 0 {
+			// expand names
+			for _, name := range repo.Names {
+				repo2 := repo.Copy()
+				repo2.Name = ""
+				repo2.Remote = repo.Remote + name
+				repo2.Defaults()
+				log.Tracef("expanded repo %s", repo2.Remote)
+				repos = append(repos, repo2)
+			}
+		} else {
+			repos = append(repos, repo)
+		}
+
+		for _, r := range repos {
+			wg.Add(1)
+			ticket <- true
+			go UpdateRepo(me.Cfg, r, donefn, me.summary)
+		}
 	}
 
 	wg.Wait()

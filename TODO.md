@@ -12,6 +12,6 @@
 
     repositories_group:
         "git@github.com:sigmonsays/":
-            - git-cadd
+            - git-caddy
             - runitcmd
             - screenshot
