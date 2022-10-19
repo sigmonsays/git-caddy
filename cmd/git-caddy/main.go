@@ -48,6 +48,7 @@ func main() {
 	var err error
 
 	opts.summary = &RunSummary{}
+	opts.summary.Start()
 
 	manifest := &gc.ManifestConfig{}
 	if gc.FileExists(opts.ManifestFile) {
@@ -86,8 +87,10 @@ func main() {
 		}
 	}
 
+	opts.summary.Stop()
+
 	s := opts.summary
-	log.Infof("scanned:%d errors:%d", s.Scanned, s.Errors)
+	log.Infof("scanned:%d errors:%d duration_sec:%d", s.Scanned, s.Errors, s.DurationSec)
 }
 
 func runRepositoryFile(opts *Options, configfile string) error {
