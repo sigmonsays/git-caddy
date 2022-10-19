@@ -29,7 +29,7 @@ func (me *AddFiles) Run() error {
 	c.Env = populateEnv(c.Env, me.Cfg, me.Repo)
 	err := c.Run()
 	if err != nil {
-		return err
+		return NewRepoError("AddFiles", me.Repo.Name).WithError(err)
 	}
 	return nil
 }

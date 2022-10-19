@@ -37,7 +37,7 @@ func (me *Clone) Run() error {
 
 	err := c.Run()
 	if err != nil {
-		return err
+		return NewRepoError("Clone", me.Repo.Name).WithError(err)
 	}
 	return nil
 }

@@ -30,7 +30,7 @@ func (me *Push) Run() error {
 	c.Env = populateEnv(c.Env, me.Cfg, me.Repo)
 	err := c.Run()
 	if err != nil {
-		return err
+		return NewRepoError("Push", me.Repo.Name).WithError(err)
 	}
 	return nil
 }
