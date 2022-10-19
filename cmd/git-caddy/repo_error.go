@@ -25,7 +25,7 @@ type RepoError struct {
 }
 
 func (me *RepoError) Error() string {
-	return fmt.Sprintf("repo:%s error:%q", me.Err)
+	return fmt.Sprintf("repo:%s type:%s error:%q", me.Name, me.Type, me.Err)
 }
 
 func (me *RepoError) WithError(e error) *RepoError {
