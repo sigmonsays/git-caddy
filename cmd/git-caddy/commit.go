@@ -40,7 +40,7 @@ func (me *Commit) Run() error {
 
 	changed, err := me.ChangedLocally()
 	if err != nil {
-		return err
+		return NewRepoError("Commit.ChangedLocally", me.Repo.Name).WithError(err)
 	}
 
 	if changed == false {
@@ -78,7 +78,7 @@ func (me *Commit) Run() error {
 			log.Tracef("treating exit code of 1 for git commit as success")
 			return nil
 		}
-		return err
+		return NewRepoError("Commit", me.Repo.Name).WithError(err)
 	}
 	return nil
 }

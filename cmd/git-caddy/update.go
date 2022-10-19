@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"strings"
 	"sync"
@@ -108,7 +107,7 @@ func UpdateRepo(cfg *gc.Config, repo *gc.Repository, done func(error), summary *
 	}
 	log.Tracef("stat %s; isdir:%v", repo.Destination, isDir)
 	if err == nil && isDir == false {
-		return fmt.Errorf("%s is not a directory", repo.Destination)
+		return NewRepoErrorf("Update", repo.Name, "%s is not a directory", repo.Destination)
 	}
 
 	log.Tracef("repo:%s destination:%s repoExists:%v noClone:%v",
