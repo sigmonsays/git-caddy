@@ -2,12 +2,20 @@ package main
 
 import (
 	"fmt"
+	"os/exec"
 
 	gc "github.com/sigmonsays/git-caddy"
 )
 
 func env_GIT_SSH_COMMAND(e []string, identityFile string) []string {
-	ssh_command := fmt.Sprintf("ssh -i %s", identityFile)
+
+	sshbin, err := exec.LookPath("ssh")
+	if err != nil {
+		sshbin="ssh"
+	}
+	ssh_command := fmt.Sprintf("%s -i %s", sshbin, identityFile)
+	log.Tracef("setting GIT_SSH_COMMAND to %q", ssh_command)
+
 	e = append(e, "GIT_SSH_COMMAND="+ssh_command)
 	return e
 }
