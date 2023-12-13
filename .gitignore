@@ -5,3 +5,4 @@ private/
 bin/
 .cache
 result
+.direnv
