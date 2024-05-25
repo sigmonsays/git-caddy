@@ -6,6 +6,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	gc "github.com/sigmonsays/git-caddy"
 )
 
 func doDiscovery() error {
@@ -17,11 +19,13 @@ func doDiscovery() error {
 	if err != nil {
 		return err
 	}
+	repos := make([]*gc.Repository, 0)
 	for _, name := range names {
 		if name.IsDir() == false {
 			continue
 		}
-		repodir := filepath.Join(wd, name.Name())
+		basename := name.Name()
+		repodir := filepath.Join(wd, basename)
 		tpath := filepath.Join(repodir, ".git")
 		st, err := os.Stat(tpath)
 		if err != nil {
@@ -45,6 +49,14 @@ func doDiscovery() error {
 			continue
 		}
 		log.Debugf("path %s has remote %s", repodir, remote)
+		repo := &gc.Repository{}
+		repo.Name = basename
+		repo.Remote = remote
+		repos = append(repos, repo)
 	}
+	cfg := &gc.Config{}
+	cfg.Repositories = make(map[string][]*gc.Repository, 0)
+	cfg.Repositories["discovered"] = repos
+	cfg.PrintConfig()
 	return nil
 }
