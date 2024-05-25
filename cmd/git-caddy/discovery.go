@@ -2,30 +2,36 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 
-	gc "github.com/sigmonsays/git-caddy"
+	"gopkg.in/yaml.v2"
 )
 
-func doDiscovery() error {
-	wd, err := os.Getwd()
+func doDiscovery(directory string) error {
+
+	// empty string means current directory
+	if directory == "" {
+		wd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		directory = wd
+	}
+	names, err := os.ReadDir(directory)
 	if err != nil {
 		return err
 	}
-	names, err := os.ReadDir(wd)
-	if err != nil {
-		return err
-	}
-	repos := make([]*gc.Repository, 0)
+	repos := make([]*repository, 0)
 	for _, name := range names {
 		if name.IsDir() == false {
 			continue
 		}
 		basename := name.Name()
-		repodir := filepath.Join(wd, basename)
+		repodir := filepath.Join(directory, basename)
 		tpath := filepath.Join(repodir, ".git")
 		st, err := os.Stat(tpath)
 		if err != nil {
@@ -49,14 +55,25 @@ func doDiscovery() error {
 			continue
 		}
 		log.Debugf("path %s has remote %s", repodir, remote)
-		repo := &gc.Repository{}
+		repo := &repository{}
 		repo.Name = basename
 		repo.Remote = remote
 		repos = append(repos, repo)
 	}
-	cfg := &gc.Config{}
-	cfg.Repositories = make(map[string][]*gc.Repository, 0)
+	cfg := &config{}
+	cfg.Repositories = make(map[string][]*repository, 0)
 	cfg.Repositories["discovered"] = repos
-	cfg.PrintConfig()
+	buf, _ := yaml.Marshal(cfg)
+	fmt.Printf("%s\n", buf)
+
 	return nil
+}
+
+type config struct {
+	Repositories map[string][]*repository
+}
+
+type repository struct {
+	Name   string `yaml:"name"`
+	Remote string `yaml:"remote"`
 }

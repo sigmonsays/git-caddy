@@ -50,7 +50,7 @@ func main() {
 	var err error
 
 	if opts.Discover {
-		err = doDiscovery()
+		err = doDiscovery(opts.WorkingDir)
 		if err != nil {
 			ExitError("Discovery: %s", err)
 		}
