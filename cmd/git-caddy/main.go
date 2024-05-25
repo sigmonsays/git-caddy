@@ -19,6 +19,7 @@ type Options struct {
 	WorkingDir     string
 	UpdateInterval int
 	Action         string
+	Discover       bool
 
 	summary *RunSummary
 }
@@ -41,11 +42,20 @@ func main() {
 	flag.StringVar(&opts.LogLevel, "l", opts.LogLevel, "short for -loglevel")
 	flag.IntVar(&opts.UpdateInterval, "I", opts.UpdateInterval, "pull upstream for changes on an interval")
 	flag.StringVar(&opts.ManifestFile, "m", opts.ManifestFile, "manifest file")
+	flag.BoolVar(&opts.Discover, "d", opts.Discover, "discover git repos")
 	flag.Parse()
 
 	gologging.SetLogLevel(opts.LogLevel)
 
 	var err error
+
+	if opts.Discover {
+		err = doDiscovery(opts.WorkingDir)
+		if err != nil {
+			ExitError("Discovery: %s", err)
+		}
+		return
+	}
 
 	opts.summary = &RunSummary{}
 	opts.summary.Start()
