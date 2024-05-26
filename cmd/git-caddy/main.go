@@ -20,7 +20,7 @@ type Options struct {
 	UpdateInterval int
 	Action         string
 	Discover       bool
-	Verison        bool
+	Version        bool
 
 	summary *RunSummary
 }
