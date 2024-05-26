@@ -1,0 +1,32 @@
+env:
+  - GO111MODULE=on
+before:
+  hooks:
+    - go mod tidy
+builds:
+  - id: git-caddy
+    main: ./cmd/git-caddy
+    binary: git-caddy
+    goos:
+      - linux
+    goarch:
+      - amd64
+snapshot:
+  # Allows you to change the name of the generated snapshot
+  name_template: "0.0.0-SNAPSHOT-{{.Env.GITHUB_RUN_NUMBER}}-none"
+archives:
+  - format: tar.gz
+nfpms:
+  - id: git-caddy
+    package_name: git-caddy
+    builds:
+      - git-caddy
+    vendor: Sig Lange
+    homepage: https://github.com/sigmonsays/git-caddy
+    maintainer: Sig Lange
+    description: Git caddy
+    formats:
+      - deb
+    bindir: /usr/bin
+    epoch: 1
+    release: 1
