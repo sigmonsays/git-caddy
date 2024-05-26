@@ -20,9 +20,17 @@ type Options struct {
 	UpdateInterval int
 	Action         string
 	Discover       bool
+	Version        bool
 
 	summary *RunSummary
 }
+
+// These variables are populated by goreleaser when the binary is built.
+var (
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
+)
 
 func main() {
 	opts := &Options{
@@ -44,6 +52,13 @@ func main() {
 	flag.StringVar(&opts.ManifestFile, "m", opts.ManifestFile, "manifest file")
 	flag.BoolVar(&opts.Discover, "d", opts.Discover, "discover git repos")
 	flag.Parse()
+
+	if opts.Version {
+		fmt.Printf("version %s\n", version)
+		fmt.Printf("commit %s\n", commit)
+		fmt.Printf("date %s\n", date)
+		os.Exit(0)
+	}
 
 	gologging.SetLogLevel(opts.LogLevel)
 
