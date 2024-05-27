@@ -51,6 +51,7 @@ func main() {
 	flag.IntVar(&opts.UpdateInterval, "I", opts.UpdateInterval, "pull upstream for changes on an interval")
 	flag.StringVar(&opts.ManifestFile, "m", opts.ManifestFile, "manifest file")
 	flag.BoolVar(&opts.Discover, "d", opts.Discover, "discover git repos")
+	flag.BoolVar(&opts.Version, "v", opts.Version, "show version")
 	flag.Parse()
 
 	if opts.Version {
