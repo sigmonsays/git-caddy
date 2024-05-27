@@ -6,7 +6,6 @@ on:
   push:
     branches:
       - dev
-      - go-releaser*
 
 permissions:
   contents: write
