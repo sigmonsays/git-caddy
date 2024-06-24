@@ -5,6 +5,15 @@ import (
 	"time"
 )
 
+func NewRunSummary() *RunSummary {
+	return &RunSummary{}
+}
+func FinishSummary(summary *RunSummary) {
+	summary.Stop()
+	s := summary
+	log.Infof("scanned:%d errors:%d duration_sec:%d", s.Scanned, s.Errors, s.DurationSec)
+}
+
 type RunSummary struct {
 	mx          sync.Mutex
 	Scanned     int
