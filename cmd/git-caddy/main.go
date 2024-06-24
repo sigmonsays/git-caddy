@@ -18,11 +18,13 @@ var (
 
 func main() {
 	var rootCmd = &cobra.Command{
-		Use: "git-caddy",
+		Use:   "git-caddy",
+		Short: "manage git repositories",
 	}
 
-	var configCmd = &cobra.Command{
-		Use: "config",
+	var runCmd = &cobra.Command{
+		Use:   "run",
+		Short: "run config file",
 		Run: func(cmd *cobra.Command, args []string) {
 			summary := NewRunSummary()
 			defer FinishSummary(summary)
@@ -36,10 +38,11 @@ func main() {
 			}
 		},
 	}
-	rootCmd.AddCommand(configCmd)
+	rootCmd.AddCommand(runCmd)
 
 	var discoverCmd = &cobra.Command{
-		Use: "discover",
+		Use:   "discover",
+		Short: "discover repositories",
 		Run: func(cmd *cobra.Command, args []string) {
 			opts, err := ReadOptions(cmd)
 			if err != nil {
@@ -54,7 +57,8 @@ func main() {
 	rootCmd.AddCommand(discoverCmd)
 
 	var versionCmd = &cobra.Command{
-		Use: "version",
+		Use:   "version",
+		Short: "print version",
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Printf("version %s\n", version)
 			fmt.Printf("commit %s\n", commit)
@@ -65,7 +69,8 @@ func main() {
 	rootCmd.AddCommand(versionCmd)
 
 	var manifestCmd = &cobra.Command{
-		Use: "manifest",
+		Use:   "manifest",
+		Short: "run manifest",
 		Run: func(cmd *cobra.Command, args []string) {
 			summary := NewRunSummary()
 			defer FinishSummary(summary)
@@ -100,18 +105,13 @@ func main() {
 	}
 	rootCmd.AddCommand(manifestCmd)
 
-	rootCmd.PersistentFlags().String("loglevel", "info", "log level")
-	rootCmd.PersistentFlags().String("section", "", "section name")
-	rootCmd.PersistentFlags().String("config", "", "repositories.yaml")
-	rootCmd.PersistentFlags().String("workdir", "", "working directory")
-	rootCmd.PersistentFlags().Int32("interval", 0, "update interval")
-	rootCmd.PersistentFlags().String("manifest", "", "manifest file")
-
-	// aliases
-	rootCmd.PersistentFlags().String("W", "", "alias for --workdir")
-	rootCmd.PersistentFlags().String("l", "", "alias for --loglevel")
-	rootCmd.PersistentFlags().String("I", "", "alias for --interval")
-	rootCmd.PersistentFlags().String("m", "", "alias for --manifest")
+	dopts := DefaultOptions()
+	rootCmd.PersistentFlags().StringP("loglevel", "l", dopts.LogLevel, "log level")
+	rootCmd.PersistentFlags().StringP("section", "s", dopts.Section, "section name")
+	rootCmd.PersistentFlags().StringP("config", "c", dopts.ConfigFile, "repositories.yaml")
+	rootCmd.PersistentFlags().StringP("workdir", "W", dopts.WorkingDir, "working directory")
+	rootCmd.PersistentFlags().Int32P("interval", "i", int32(dopts.UpdateInterval), "update interval")
+	rootCmd.PersistentFlags().StringP("manifest", "m", dopts.ManifestFile, "manifest file")
 
 	err := rootCmd.Execute()
 	if err != nil {

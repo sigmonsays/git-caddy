@@ -8,16 +8,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func ReadOptions(cmd *cobra.Command) (*Options, error) {
-
+func DefaultOptions() *Options {
 	opts := &Options{
 		ConfigFile:     "repositories.yaml",
 		ManifestFile:   filepath.Join(os.Getenv("HOME"), ".git-caddy.yaml"),
 		WorkingDir:     "",
 		UpdateInterval: 0,
+		Section:        "repos",
+		LogLevel:       "info",
 	}
+	return opts
+}
 
-	// rootCmd.PersistentFlags().String("manifest", "", "manifest file")
+func ReadOptions(cmd *cobra.Command) (*Options, error) {
+	opts := DefaultOptions()
 
 	opts.Section, _ = cmd.Flags().GetString("section")
 	opts.ConfigFile, _ = cmd.Flags().GetString("config")
@@ -25,11 +29,15 @@ func ReadOptions(cmd *cobra.Command) (*Options, error) {
 	opts.LogLevel, _ = cmd.Flags().GetString("loglevel")
 	opts.UpdateInterval, _ = cmd.Flags().GetInt("interval")
 	opts.ManifestFile, _ = cmd.Flags().GetString("manifest")
-	gologging.SetLogLevel(opts.LogLevel)
+
+	if opts.LogLevel != "" {
+		gologging.SetLogLevel(opts.LogLevel)
+	}
 
 	if opts.WorkingDir != "" {
 		err := os.Chdir(opts.WorkingDir)
 		ExitIfError(err, "Chdir %s: %s", opts.WorkingDir, err)
+		log.Debugf("changed working directory to %s", opts.WorkingDir)
 	}
 
 	return opts, nil
