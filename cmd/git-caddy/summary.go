@@ -8,9 +8,8 @@ import (
 func NewRunSummary() *RunSummary {
 	return &RunSummary{}
 }
-func FinishSummary(summary *RunSummary) {
-	summary.Stop()
-	s := summary
+func FinishSummary(s *RunSummary) {
+	s.Stop()
 	log.Infof("scanned:%d errors:%d duration_sec:%d", s.Scanned, s.Errors, s.DurationSec)
 }
 

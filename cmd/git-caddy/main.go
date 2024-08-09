@@ -27,6 +27,7 @@ func main() {
 		Short: "run config file",
 		Run: func(cmd *cobra.Command, args []string) {
 			summary := NewRunSummary()
+			summary.Start()
 			defer FinishSummary(summary)
 			opts, err := ReadOptions(cmd)
 			if err != nil {
@@ -73,6 +74,7 @@ func main() {
 		Short: "run manifest",
 		Run: func(cmd *cobra.Command, args []string) {
 			summary := NewRunSummary()
+			summary.Start()
 			defer FinishSummary(summary)
 			opts, err := ReadOptions(cmd)
 			if err != nil {
