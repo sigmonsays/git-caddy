@@ -20,6 +20,7 @@ type Repository struct {
 	IdentityFile string   `yaml:"identity_file"`
 	AddFiles     string   `yaml:"add_files"`
 	NoClone      bool     `yaml:"no_clone"`
+	Tags         string   `yaml:"tags"`
 }
 
 func (me *Repository) Copy() *Repository {
@@ -35,6 +36,7 @@ func (me *Repository) Copy() *Repository {
 	cp.IdentityFile = me.IdentityFile
 	cp.AddFiles = me.AddFiles
 	cp.NoClone = me.NoClone
+	cp.Tags = me.Tags
 	return cp
 }
 func (me *Repository) IsEnabled() bool {

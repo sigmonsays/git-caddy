@@ -105,6 +105,7 @@ func main() {
 			}
 		},
 	}
+	manifestCmd.Flags().StringArray("tag", nil, "tags to run")
 	rootCmd.AddCommand(manifestCmd)
 
 	dopts := DefaultOptions()
