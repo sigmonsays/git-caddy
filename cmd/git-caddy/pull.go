@@ -98,6 +98,7 @@ func GetLocalHash(dir, branch string) (string, error) {
 		"rev-list",
 		"--max-count=1",
 		branch,
+		"--",
 	}
 	out, err := exec.Command("git", cmdline...).Output()
 	if err != nil {
