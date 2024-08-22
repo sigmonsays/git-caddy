@@ -12,7 +12,7 @@ type Status struct {
 	Repo *gc.Repository
 }
 
-func (me *Status) Run() error {
+func (me *Status) Run(ctx *gc.Context) error {
 	cmdline := []string{
 		"git",
 		"status",

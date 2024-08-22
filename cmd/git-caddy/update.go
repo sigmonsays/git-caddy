@@ -110,11 +110,15 @@ func UpdateRepo(cfg *gc.Config, repo *gc.Repository, done func(error), summary *
 		return NewRepoErrorf("Update", repo.Name, "%s is not a directory", repo.Destination)
 	}
 
+	ctx := &gc.Context{
+		RepoExists: repoExists,
+	}
+
 	log.Tracef("repo:%s destination:%s repoExists:%v noClone:%v",
 		repo.Name, repo.Destination, repoExists, repo.NoClone)
 	if repoExists == false && repo.NoClone == false {
 		clone := &Clone{cfg, repo}
-		err = clone.Run()
+		err = clone.Run(ctx)
 		if err != nil {
 			return err
 		}
@@ -122,7 +126,7 @@ func UpdateRepo(cfg *gc.Config, repo *gc.Repository, done func(error), summary *
 
 	if strings.Trim(repo.AddFiles, " ") != "" {
 		addFiles := &AddFiles{cfg, repo}
-		err = addFiles.Run()
+		err = addFiles.Run(ctx)
 		if err != nil {
 			return err
 		}
@@ -130,26 +134,30 @@ func UpdateRepo(cfg *gc.Config, repo *gc.Repository, done func(error), summary *
 
 	if repoExists == true {
 		pull := &Pull{cfg, repo}
-		err = pull.Run()
-		if err != nil {
+		pres, err := pull.Run(ctx)
+		if err == nil {
+			if pres.Changed {
+				summary.Changed += 1
+			}
+		} else {
 			return err
 		}
 
 		commit := &Commit{cfg, repo}
-		err = commit.Run()
+		err = commit.Run(ctx)
 		if err != nil {
 			return err
 		}
 
 		push := &Push{cfg, repo}
-		err = push.Run()
+		err = push.Run(ctx)
 		if err != nil {
 			return err
 		}
 	}
 
 	status := &Status{cfg, repo}
-	err = status.Run()
+	err = status.Run(ctx)
 	if err != nil {
 		return err
 	}
