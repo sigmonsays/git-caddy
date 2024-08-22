@@ -18,19 +18,19 @@ type Pull struct {
 func (me *Pull) Run(ctx *gc.Context) error {
 
 	// TODO collect hashes
-	branch, err := GetUpstreamBranch(me.Repo.Destination)
+	branch, err := GetUpstreamBranch(me.Cfg, me.Repo, me.Repo.Destination)
 	if err == nil {
 		ctx.UpstreamBranchName = branch
 		log.Tracef("%s upstream branch %s", me.Repo.Name, branch)
 	}
-	lhash, err := GetLocalHash(me.Repo.Destination, branch)
+	lhash, err := GetLocalHash(me.Cfg, me.Repo, me.Repo.Destination, branch)
 	if err == nil {
 		ctx.LocalHash = lhash
 		log.Tracef("%s local hash %s", me.Repo.Name, lhash)
 	} else {
 		log.Warnf("%s get local hash: %s", me.Repo.Name, err)
 	}
-	rhash, err := GetRemoteHash(me.Repo.Destination, branch)
+	rhash, err := GetRemoteHash(me.Cfg, me.Repo, me.Repo.Destination, branch)
 	if err == nil {
 		ctx.RemoteHash = rhash
 		log.Tracef("%s remote hash %s", me.Repo.Name, rhash)
@@ -67,7 +67,7 @@ func RepoCommand(prefix string, cfg *gc.Config, repo *gc.Repository, cmdline []s
 }
 
 // get remote branch name
-func GetUpstreamBranch(dir string) (string, error) {
+func GetUpstreamBranch(cfg *gc.Config, repo *gc.Repository, dir string) (string, error) {
 	cmdline := []string{
 		"ls-remote",
 		"-h",
@@ -75,6 +75,7 @@ func GetUpstreamBranch(dir string) (string, error) {
 	}
 	c := exec.Command("git", cmdline...)
 	c.Dir = dir
+	c.Env = populateEnv(c.Env, cfg, repo)
 
 	out, err := c.Output()
 	if err != nil {
@@ -92,7 +93,7 @@ func GetUpstreamBranch(dir string) (string, error) {
 }
 
 // get a commit hash for branch in git repo at directory
-func GetLocalHash(dir, branch string) (string, error) {
+func GetLocalHash(cfg *gc.Config, repo *gc.Repository, dir, branch string) (string, error) {
 	cmdline := []string{
 		"-C", dir,
 		"rev-list",
@@ -100,7 +101,9 @@ func GetLocalHash(dir, branch string) (string, error) {
 		branch,
 		"--",
 	}
-	out, err := exec.Command("git", cmdline...).Output()
+	c := exec.Command("git", cmdline...)
+	c.Env = populateEnv(c.Env, cfg, repo)
+	out, err := c.Output()
 	if err != nil {
 		log.Tracef("local_hash: [cmdline %s] error: %s\n", cmdline, err)
 		return "", err
@@ -108,7 +111,7 @@ func GetLocalHash(dir, branch string) (string, error) {
 	return strings.Trim(string(out), "\n"), nil
 }
 
-func GetRemoteHash(dir, branch string) (string, error) {
+func GetRemoteHash(cfg *gc.Config, repo *gc.Repository, dir, branch string) (string, error) {
 	cmdline := []string{
 		"-C", dir,
 		"ls-remote",
@@ -116,7 +119,9 @@ func GetRemoteHash(dir, branch string) (string, error) {
 		"-h",
 		fmt.Sprintf("refs/heads/%s", branch),
 	}
-	out, err := exec.Command("git", cmdline...).Output()
+	c := exec.Command("git", cmdline...)
+	c.Env = populateEnv(c.Env, cfg, repo)
+	out, err := c.Output()
 	if err != nil {
 		log.Tracef("remote_hash: [cmdline %s] error: %s\n", cmdline, err)
 		return "", err
