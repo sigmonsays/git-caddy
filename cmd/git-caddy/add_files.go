@@ -13,7 +13,7 @@ type AddFiles struct {
 	Repo *gc.Repository
 }
 
-func (me *AddFiles) Run() error {
+func (me *AddFiles) Run(ctx *gc.Context) error {
 	cmdline := []string{
 		"git",
 		"add",

@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 
 	gc "github.com/sigmonsays/git-caddy"
 )
@@ -12,7 +14,12 @@ type Pull struct {
 	Repo *gc.Repository
 }
 
-func (me *Pull) Run() error {
+func (me *Pull) Run(ctx *gc.Context) error {
+
+	// TODO collect hashes
+	// lhash, err := GetLocalHash(dir string, branch string)
+
+	// perform git pull
 	cmdline := []string{
 		"git",
 		"pull",
@@ -31,4 +38,40 @@ func (me *Pull) Run() error {
 		return NewRepoError("Pull", me.Repo.Name).WithError(err)
 	}
 	return nil
+}
+
+// get a commit hash for branch in git repo at directory
+func GetLocalHash(dir, branch string) string {
+	cmdline := []string{
+		"-C", dir,
+		"rev-list",
+		"--max-count=1",
+		branch,
+	}
+	out, err := exec.Command("git", cmdline...).Output()
+	if err != nil {
+		log.Infof("remote_hash: [cmdline %s] error: %s\n", cmdline, err)
+		return ""
+	}
+	return strings.Trim(string(out), "\n")
+}
+
+func GetRemoteHash(dir, branch string) string {
+	cmdline := []string{
+		"-C", dir,
+		"ls-remote",
+		"origin",
+		"-h",
+		fmt.Sprintf("refs/heads/%s", branch),
+	}
+	out, err := exec.Command("git", cmdline...).Output()
+	if err != nil {
+		log.Infof("remote_hash: [cmdline %s] error: %s\n", cmdline, err)
+		return ""
+	}
+	tmp := strings.Fields(string(out))
+	if len(tmp) < 1 {
+		return ""
+	}
+	return tmp[0]
 }

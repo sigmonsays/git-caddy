@@ -13,7 +13,7 @@ type Clone struct {
 	Repo *gc.Repository
 }
 
-func (me *Clone) Run() error {
+func (me *Clone) Run(ctx *gc.Context) error {
 	cmdline := []string{
 		"git",
 		"--no-pager",
