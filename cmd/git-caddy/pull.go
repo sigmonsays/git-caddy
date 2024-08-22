@@ -17,7 +17,7 @@ type Pull struct {
 
 func (me *Pull) Run(ctx *gc.Context) error {
 
-	// TODO collect hashes
+	// collect hashes
 	branch, err := GetUpstreamBranch(me.Cfg, me.Repo, me.Repo.Destination)
 	if err == nil {
 		ctx.UpstreamBranchName = branch
@@ -36,6 +36,12 @@ func (me *Pull) Run(ctx *gc.Context) error {
 		log.Tracef("%s remote hash %s", me.Repo.Name, rhash)
 	} else {
 		log.Warnf("%s get remote hash: %s", me.Repo.Name, err)
+	}
+
+	// if local hash and remote hash match, we're up to date!!
+	nonEmptyHashes := lhash != "" && rhash != ""
+	if nonEmptyHashes && lhash == rhash {
+		log.Tracef("already up to date")
 	}
 
 	// perform git pull
@@ -68,10 +74,12 @@ func RepoCommand(prefix string, cfg *gc.Config, repo *gc.Repository, cmdline []s
 
 // get remote branch name
 func GetUpstreamBranch(cfg *gc.Config, repo *gc.Repository, dir string) (string, error) {
+	// git ls-remote https://github.com/git/git.git --symref HEAD
 	cmdline := []string{
 		"ls-remote",
-		"-h",
-		".",
+		"--symref",
+		repo.Remote,
+		"HEAD",
 	}
 	c := exec.Command("git", cmdline...)
 	c.Dir = dir
@@ -87,7 +95,11 @@ func GetUpstreamBranch(cfg *gc.Config, repo *gc.Repository, dir string) (string,
 		return "", fmt.Errorf("empty output")
 	}
 	line := lines[0]
-	branch := filepath.Base(line)
+	tmp := strings.Fields(line)
+	if len(tmp) == 0 {
+		return "", fmt.Errorf("invalid output")
+	}
+	branch := filepath.Base(tmp[1])
 
 	return branch, nil
 }
