@@ -134,8 +134,12 @@ func UpdateRepo(cfg *gc.Config, repo *gc.Repository, done func(error), summary *
 
 	if repoExists == true {
 		pull := &Pull{cfg, repo}
-		err = pull.Run(ctx)
-		if err != nil {
+		pres, err := pull.Run(ctx)
+		if err == nil {
+			if pres.Changed {
+				summary.Changed += 1
+			}
+		} else {
 			return err
 		}
 

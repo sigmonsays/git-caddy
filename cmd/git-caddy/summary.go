@@ -14,10 +14,12 @@ func FinishSummary(s *RunSummary) {
 }
 
 type RunSummary struct {
-	mx          sync.Mutex
-	Scanned     int
-	Errors      int
-	DurationSec int
+	mx sync.Mutex
+
+	Scanned     int // how many repos were scanned
+	Errors      int // how many repos had errors
+	DurationSec int // total time spent
+	Changed     int // how many repositories were changed on git pull
 
 	started time.Time
 	stopped time.Time

@@ -14,8 +14,15 @@ type Pull struct {
 	Cfg  *gc.Config
 	Repo *gc.Repository
 }
+type PullResult struct {
 
-func (me *Pull) Run(ctx *gc.Context) error {
+	// true if the pull changed local files
+	Changed bool
+}
+
+func (me *Pull) Run(ctx *gc.Context) (*PullResult, error) {
+
+	ret := &PullResult{}
 
 	// collect hashes
 	branch, err := GetUpstreamBranch(me.Cfg, me.Repo, me.Repo.Destination)
@@ -42,6 +49,8 @@ func (me *Pull) Run(ctx *gc.Context) error {
 	nonEmptyHashes := lhash != "" && rhash != ""
 	if nonEmptyHashes && lhash == rhash {
 		log.Tracef("already up to date")
+	} else {
+		ret.Changed = true
 	}
 
 	// perform git pull
@@ -53,9 +62,9 @@ func (me *Pull) Run(ctx *gc.Context) error {
 	log.Tracef("git pull %s", me.Repo.Name)
 	err = RepoCommand("pull", me.Cfg, me.Repo, cmdline)
 	if err != nil {
-		return NewRepoError("Pull", me.Repo.Name).WithError(err)
+		return nil, NewRepoError("Pull", me.Repo.Name).WithError(err)
 	}
-	return nil
+	return ret, nil
 }
 
 func RepoCommand(prefix string, cfg *gc.Config, repo *gc.Repository, cmdline []string) error {
