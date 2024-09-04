@@ -81,28 +81,19 @@ func main() {
 				ExitError("ReadOptions: %s", err)
 			}
 
-			manifest := &gc.ManifestConfig{}
+			cfg := &gc.Config{}
 			if gc.FileExists(opts.ManifestFile) {
-				err = manifest.LoadYaml(opts.ManifestFile)
+				err = cfg.LoadYaml(opts.ManifestFile)
 				ExitIfError(err, "LoadYaml %s: %s", opts.ManifestFile, err)
 			}
 
-			files := manifest.ListManifest()
-			log.Tracef("loaded %d files using manifest from %s", len(files), opts.ManifestFile)
-			for _, e := range files {
-				if e.Section != "" {
-					opts.Section = e.Section
-				}
-				if e.Def.WorkingDir != "" {
-					workingdir := os.ExpandEnv(e.Def.WorkingDir)
-					log.Tracef("chdir %s", workingdir)
-					os.Chdir(workingdir)
-				}
-				err = runRepositoryFile(opts, e.Filename, summary)
-				if err != nil {
-					log.Errorf("run %s: %s", e.Filename, err)
-				}
+			if cfg.HasManifest() == false {
+				ExitError("Config %s is not a manifest", opts.ManifestFile)
 			}
+
+			err = RunManifest(summary, opts, cfg)
+			ExitIfError(err, "RunManifest %s: %s", opts.ManifestFile, err)
+
 		},
 	}
 	manifestCmd.Flags().StringArray("tag", nil, "tags to run")

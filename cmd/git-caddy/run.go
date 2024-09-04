@@ -20,6 +20,14 @@ func runRepositoryFile(opts *Options, configfile string, summary *RunSummary) er
 		cfg.PrintConfig()
 	}
 
+	hasManifest := cfg.HasManifest()
+	if hasManifest {
+		return RunManifest(summary, opts, cfg)
+	}
+	return RunRepository(summary, opts, cfg)
+}
+
+func RunRepository(summary *RunSummary, opts *Options, cfg *gc.Config) error {
 	repos, found := cfg.Repositories[opts.Section]
 	if found == false {
 		return fmt.Errorf("Section not found: %q", opts.Section)
@@ -34,7 +42,7 @@ func runRepositoryFile(opts *Options, configfile string, summary *RunSummary) er
 	}
 
 	if opts.UpdateInterval == 0 {
-		err = updateRun.Run()
+		err := updateRun.Run()
 		return err
 	}
 
@@ -43,11 +51,12 @@ func runRepositoryFile(opts *Options, configfile string, summary *RunSummary) er
 	for {
 		select {
 		case <-tick.C:
-			err = updateRun.Run()
+			err := updateRun.Run()
 			if err != nil {
 				log.Warnf("%s", err)
 			}
 		}
 	}
 
+	return nil
 }
