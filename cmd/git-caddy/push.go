@@ -12,7 +12,7 @@ type Push struct {
 	Repo *gc.Repository
 }
 
-func (me *Push) Run() error {
+func (me *Push) Run(ctx *gc.Context) error {
 	cmdline := []string{
 		"git",
 		"push",

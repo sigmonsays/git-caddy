@@ -36,7 +36,7 @@ func (me *Commit) ChangedLocally() (bool, error) {
 	return false, nil
 }
 
-func (me *Commit) Run() error {
+func (me *Commit) Run(ctx *gc.Context) error {
 
 	changed, err := me.ChangedLocally()
 	if err != nil {
