@@ -6,12 +6,5 @@
   - use rotating logger, ability to set rotate sizes
 
 - show status of repositories and dont update
-  git-caddy -X status
+  git-caddy status
 
-- Implement ability to shorten repository specification even more
-
-    repositories_group:
-        "git@github.com:sigmonsays/":
-            - git-caddy
-            - runitcmd
-            - screenshot
