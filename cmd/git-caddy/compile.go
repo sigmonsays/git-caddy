@@ -4,7 +4,7 @@ import (
 	gc "github.com/sigmonsays/git-caddy"
 )
 
-type CompiledRun struct {
+type Compile struct {
 	Section      string
 	Cfg          *gc.Config
 	Repositories []*gc.Repository
@@ -16,7 +16,7 @@ type CompiledRepository struct {
 	Repo *gc.Repository
 }
 
-func (me *CompiledRun) Run() ([]*CompiledRepository, error) {
+func (me *Compile) Run() ([]*CompiledRepository, error) {
 	ret := make([]*CompiledRepository, 0)
 
 	var n int

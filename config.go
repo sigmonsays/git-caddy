@@ -57,7 +57,6 @@ func (c *Config) LoadYamlBuffer(buf []byte) error {
 }
 
 func (c *Config) FixupConfig() error {
-
 	if c.Concurrency == 0 {
 		c.Concurrency = 5
 	}

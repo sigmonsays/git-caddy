@@ -8,7 +8,22 @@ import (
 	gc "github.com/sigmonsays/git-caddy"
 )
 
+func RunCompiled(opts *Options, cfg *gc.Config, summary *RunSummary, run *CompiledRun) error {
+	p := &ProcessRepositories{
+		Opts:         opts,
+		Cfg:          cfg,
+		summary:      summary,
+		Repositories: run.List,
+	}
+	err := p.Run()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 type ProcessRepositories struct {
+	Opts         *Options
 	Cfg          *gc.Config
 	Repositories []*CompiledRepository
 	summary      *RunSummary
@@ -33,7 +48,7 @@ func (me *ProcessRepositories) Run() error {
 		repo := crepo.Repo
 		wg.Add(1)
 		ticket <- true
-		go ProcessRepo(me.Cfg, repo, donefn, me.summary)
+		go ProcessRepo(me.Opts, me.Cfg, repo, donefn, me.summary)
 	}
 
 	wg.Wait()
@@ -49,7 +64,7 @@ func (me *ProcessRepositories) Run() error {
 	return nil
 }
 
-func ProcessRepo(cfg *gc.Config, repo *gc.Repository, done func(error), summary *RunSummary) (err error) {
+func ProcessRepo(opts *Options, cfg *gc.Config, repo *gc.Repository, done func(error), summary *RunSummary) (err error) {
 	summary.IncrScanned()
 
 	log.Debugf("Updating repo %s, remote:%s ", repo.Name, repo.Remote)
@@ -73,6 +88,11 @@ func ProcessRepo(cfg *gc.Config, repo *gc.Repository, done func(error), summary 
 
 	ctx := &gc.Context{
 		RepoExists: repoExists,
+	}
+
+	if opts.Pretend {
+		log.Infof("Pretend %s (exists:%v)", repo.Name, repoExists)
+		return nil
 	}
 
 	log.Tracef("repo:%s destination:%s repoExists:%v noClone:%v",

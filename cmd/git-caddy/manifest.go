@@ -6,11 +6,11 @@ import (
 	gc "github.com/sigmonsays/git-caddy"
 )
 
-func RunManifest(summary *RunSummary, opts *Options, cfg *gc.Config) error {
+func CompileManifest(summary *RunSummary, opts *Options, cfg *gc.Config, run *CompiledRun) error {
 	manifest := cfg.GetManifest()
 
 	files := manifest.ListManifest()
-	log.Tracef("loaded %d files using manifest from %s", len(files), opts.ManifestFile)
+	log.Tracef("loaded %d files using manifest", len(files))
 	for _, e := range files {
 		if e.Section != "" {
 			opts.Section = e.Section
@@ -20,7 +20,7 @@ func RunManifest(summary *RunSummary, opts *Options, cfg *gc.Config) error {
 			log.Tracef("chdir %s", workingdir)
 			os.Chdir(workingdir)
 		}
-		err := runRepositoryFile(opts, e.Filename, summary)
+		err := CompileRepository(summary, opts, cfg, run)
 		if err != nil {
 			log.Errorf("run %s: %s", e.Filename, err)
 		}

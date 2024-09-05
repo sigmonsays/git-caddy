@@ -75,43 +75,13 @@ func main() {
 	}
 	rootCmd.AddCommand(versionCmd)
 
-	var manifestCmd = &cobra.Command{
-		Use:   "manifest",
-		Short: "run manifest",
-		Run: func(cmd *cobra.Command, args []string) {
-			summary := NewRunSummary()
-			summary.Start()
-			defer FinishSummary(summary)
-			opts, err := ReadOptions(cmd)
-			if err != nil {
-				ExitError("ReadOptions: %s", err)
-			}
-
-			cfg := &gc.Config{}
-			if gc.FileExists(opts.ManifestFile) {
-				err = cfg.LoadYaml(opts.ManifestFile)
-				ExitIfError(err, "LoadYaml %s: %s", opts.ManifestFile, err)
-			}
-
-			if cfg.HasManifest() == false {
-				ExitError("Config %s is not a manifest", opts.ManifestFile)
-			}
-
-			err = RunManifest(summary, opts, cfg)
-			ExitIfError(err, "RunManifest %s: %s", opts.ManifestFile, err)
-
-		},
-	}
-	manifestCmd.Flags().StringArray("tag", nil, "tags to run")
-	rootCmd.AddCommand(manifestCmd)
-
 	dopts := DefaultOptions()
 	rootCmd.PersistentFlags().StringP("loglevel", "l", dopts.LogLevel, "log level")
 	rootCmd.PersistentFlags().StringP("section", "s", dopts.Section, "section name")
 	rootCmd.PersistentFlags().StringP("config", "c", dopts.ConfigFile, "repositories.yaml")
 	rootCmd.PersistentFlags().StringP("workdir", "W", dopts.WorkingDir, "working directory")
 	rootCmd.PersistentFlags().Int32P("interval", "i", int32(dopts.UpdateInterval), "update interval")
-	rootCmd.PersistentFlags().StringP("manifest", "m", dopts.ManifestFile, "manifest file")
+	rootCmd.PersistentFlags().BoolP("pretend", "p", dopts.Pretend, "pretend mode")
 
 	err := rootCmd.Execute()
 	if err != nil {

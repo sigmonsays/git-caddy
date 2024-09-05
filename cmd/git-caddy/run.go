@@ -7,7 +7,25 @@ import (
 	gc "github.com/sigmonsays/git-caddy"
 )
 
+// a complete run of all repositories once manifest and configuration files have been parsed
+type CompiledRun struct {
+	List []*CompiledRepository
+}
+
+func (me *CompiledRun) Append(ls []*CompiledRepository) {
+	me.List = append(me.List, ls...)
+}
+
 func runRepositoryFile(opts *Options, configfile string, summary *RunSummary) error {
+	run := &CompiledRun{}
+	err := compileRepositoryFile(opts, configfile, summary, run)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func compileRepositoryFile(opts *Options, configfile string, summary *RunSummary, run *CompiledRun) error {
 	cfg := &gc.Config{}
 	log.Infof("run repository file:%s section:%s", configfile, opts.Section)
 	err := cfg.LoadYaml(configfile)
@@ -21,19 +39,14 @@ func runRepositoryFile(opts *Options, configfile string, summary *RunSummary) er
 
 	// run manifest if present
 	if cfg.HasManifest() {
-		err := RunManifest(summary, opts, cfg)
+		err := CompileManifest(summary, opts, cfg, run)
 		if err != nil {
 			return err
 		}
 	}
 
 	// run repositories
-	compiled, err := CompileRepository(summary, opts, cfg)
-	if err != nil {
-		return err
-	}
-
-	err = compiled.Run()
+	err = CompileRepository(summary, opts, cfg, run)
 	if err != nil {
 		return err
 	}
@@ -41,14 +54,14 @@ func runRepositoryFile(opts *Options, configfile string, summary *RunSummary) er
 	return nil
 }
 
-func CompileRepository(summary *RunSummary, opts *Options, cfg *gc.Config) (*ProcessRepositories, error) {
+func CompileRepository(summary *RunSummary, opts *Options, cfg *gc.Config, run *CompiledRun) error {
 	repos, found := cfg.Repositories[opts.Section]
 	if found == false {
-		return nil, fmt.Errorf("Section not found: %q", opts.Section)
+		return fmt.Errorf("Section not found: %q", opts.Section)
 	}
 	log.Debugf("concurrency:%d", cfg.Concurrency)
 
-	compile := &CompiledRun{
+	compile := &Compile{
 		Section:      opts.Section,
 		Cfg:          cfg,
 		Repositories: repos,
@@ -57,15 +70,11 @@ func CompileRepository(summary *RunSummary, opts *Options, cfg *gc.Config) (*Pro
 
 	compiled, err := compile.Run()
 	if err != nil {
-		return nil, err
+		return err
 	}
+	run.Append(compiled)
 	log.Tracef("compiled %d repos", len(compiled))
-	processRun := &ProcessRepositories{}
-	err = processRun.Run()
-	if err != nil {
-		return nil, err
-	}
-	return processRun, nil
+	return nil
 }
 
 func RunLoop(opts *Options, configfile string, summary *RunSummary) error {
@@ -75,25 +84,26 @@ func RunLoop(opts *Options, configfile string, summary *RunSummary) error {
 	if err != nil {
 		return err
 	}
+	run := &CompiledRun{}
 
 	if log.IsTrace() {
 		cfg.PrintConfig()
 	}
 	// run repositories
-	compiled, err := CompileRepository(summary, opts, cfg)
+	err = CompileRepository(summary, opts, cfg, run)
 	if err != nil {
 		return err
 	}
-	return RunLoopCompiled(opts, compiled)
+	return RunLoopCompiled(cfg, summary, opts, run)
 }
 
-func RunLoopCompiled(opts *Options, compiled *ProcessRepositories) error {
+func RunLoopCompiled(cfg *gc.Config, summary *RunSummary, opts *Options, run *CompiledRun) error {
 	tick := time.NewTicker(time.Duration(opts.UpdateInterval) * time.Second)
 	defer tick.Stop()
 	for {
 		select {
 		case <-tick.C:
-			err := compiled.Run()
+			err := RunCompiled(opts, cfg, summary, run)
 			if err != nil {
 				log.Warnf("%s", err)
 			}

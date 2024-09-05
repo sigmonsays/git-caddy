@@ -2,7 +2,6 @@ package main
 
 import (
 	"os"
-	"path/filepath"
 
 	gologging "github.com/sigmonsays/go-logging"
 	"github.com/spf13/cobra"
@@ -11,7 +10,6 @@ import (
 func DefaultOptions() *Options {
 	opts := &Options{
 		ConfigFile:     "repositories.yaml",
-		ManifestFile:   filepath.Join(os.Getenv("HOME"), ".git-caddy.yaml"),
 		WorkingDir:     "",
 		UpdateInterval: 0,
 		Section:        "repos",
@@ -28,7 +26,7 @@ func ReadOptions(cmd *cobra.Command) (*Options, error) {
 	opts.WorkingDir, _ = cmd.Flags().GetString("workdir")
 	opts.LogLevel, _ = cmd.Flags().GetString("loglevel")
 	opts.UpdateInterval, _ = cmd.Flags().GetInt("interval")
-	opts.ManifestFile, _ = cmd.Flags().GetString("manifest")
+	opts.Pretend, _ = cmd.Flags().GetBool("pretend")
 
 	if opts.LogLevel != "" {
 		gologging.SetLogLevel(opts.LogLevel)
@@ -47,9 +45,9 @@ type Options struct {
 	LogLevel       string
 	Section        string
 	ConfigFile     string
-	ManifestFile   string
 	WorkingDir     string
 	UpdateInterval int
 	Discover       bool
 	Version        bool
+	Pretend        bool
 }
