@@ -9,9 +9,9 @@ import (
 func CompileManifest(summary *RunSummary, opts *Options, cfg *gc.Config, run *CompiledRun) error {
 	manifest := cfg.GetManifest()
 
-	files := manifest.ListManifest()
-	log.Tracef("loaded %d files using manifest", len(files))
-	for _, e := range files {
+	entries := manifest.ListManifest()
+	log.Tracef("loaded %d manifest entries from manifest", len(entries))
+	for _, e := range entries {
 		if e.Section != "" {
 			opts.Section = e.Section
 		}
@@ -20,7 +20,17 @@ func CompileManifest(summary *RunSummary, opts *Options, cfg *gc.Config, run *Co
 			log.Tracef("chdir %s", workingdir)
 			os.Chdir(workingdir)
 		}
-		err := CompileRepository(summary, opts, cfg, run)
+
+		cfg2 := &gc.Config{}
+		err := cfg2.LoadYaml(e.Filename)
+		if err != nil {
+			log.Errorf("load %s: %s", e.Filename, err)
+			continue
+		}
+		opts2 := opts.Clone()
+		opts2.Section = e.Section
+
+		err = CompileRepository(summary, opts2, cfg2, run)
 		if err != nil {
 			log.Errorf("run %s: %s", e.Filename, err)
 		}

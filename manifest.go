@@ -7,8 +7,8 @@ import (
 )
 
 type ManifestDef struct {
-	Pattern    string
-	Sections   string
+	Pattern    string `yaml:"pattern"`
+	Sections   string `yaml:"sections"`
 	WorkingDir string `yaml:"dir"`
 }
 
@@ -46,4 +46,3 @@ func (c *ManifestConfig) ListManifest() []*ManifestEntry {
 	}
 	return ret
 }
-

@@ -38,6 +38,8 @@ func main() {
 				RunLoop(opts, opts.ConfigFile, summary)
 				return
 			}
+
+			// otherwise, no loop, run repository file
 			if gc.FileExists(opts.ConfigFile) {
 				err := runRepositoryFile(opts, opts.ConfigFile, summary)
 				ExitIfError(err, "run %s: %s", opts.ConfigFile, err)

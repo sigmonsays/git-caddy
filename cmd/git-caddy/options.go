@@ -51,3 +51,9 @@ type Options struct {
 	Version        bool
 	Pretend        bool
 }
+
+func (me *Options) Clone() *Options {
+	var opts2 Options
+	opts2 = *me
+	return &opts2
+}

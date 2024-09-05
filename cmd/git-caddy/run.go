@@ -14,27 +14,51 @@ type CompiledRun struct {
 
 func (me *CompiledRun) Append(ls []*CompiledRepository) {
 	me.List = append(me.List, ls...)
+	log.Tracef("appended %d, total %d", len(ls), len(me.List))
 }
 
 func runRepositoryFile(opts *Options, configfile string, summary *RunSummary) error {
-	run := &CompiledRun{}
-	err := compileRepositoryFile(opts, configfile, summary, run)
+	cfg, err := LoadConfig(configfile)
 	if err != nil {
 		return err
 	}
+
+	run := &CompiledRun{}
+	err = compileRepositoryFile(opts, configfile, summary, run)
+	if err != nil {
+		return err
+	}
+
+	// done compiling
+	log.Debugf("done compiling repo list, have %d repositories to update", len(run.List))
+
+	err = RunCompiled(opts, cfg, summary, run)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func compileRepositoryFile(opts *Options, configfile string, summary *RunSummary, run *CompiledRun) error {
+func LoadConfig(configfile string) (*gc.Config, error) {
 	cfg := &gc.Config{}
-	log.Infof("run repository file:%s section:%s", configfile, opts.Section)
+	log.Infof("load config repository file:%s", configfile)
 	err := cfg.LoadYaml(configfile)
 	if err != nil {
-		return err
+		return nil, err
 	}
-
 	if log.IsTrace() {
 		cfg.PrintConfig()
+	}
+	return cfg, nil
+}
+
+// reads configfile and popultes the CompiledRun with repositories
+// loads manifests as well
+func compileRepositoryFile(opts *Options, configfile string, summary *RunSummary, run *CompiledRun) error {
+	cfg, err := LoadConfig(configfile)
+	if err != nil {
+		return err
 	}
 
 	// run manifest if present
@@ -45,7 +69,7 @@ func compileRepositoryFile(opts *Options, configfile string, summary *RunSummary
 		}
 	}
 
-	// run repositories
+	// compile repositories
 	err = CompileRepository(summary, opts, cfg, run)
 	if err != nil {
 		return err
@@ -73,7 +97,6 @@ func CompileRepository(summary *RunSummary, opts *Options, cfg *gc.Config, run *
 		return err
 	}
 	run.Append(compiled)
-	log.Tracef("compiled %d repos", len(compiled))
 	return nil
 }
 
