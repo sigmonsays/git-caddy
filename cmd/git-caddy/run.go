@@ -42,14 +42,14 @@ func runRepositoryFile(opts *Options, configfile string, summary *RunSummary) er
 
 func LoadConfig(configfile string) (*gc.Config, error) {
 	cfg := &gc.Config{}
-	log.Infof("load config repository file:%s", configfile)
+	log.Infof("load config file: %s", configfile)
 	err := cfg.LoadYaml(configfile)
 	if err != nil {
 		return nil, err
 	}
-	if log.IsTrace() {
-		cfg.PrintConfig()
-	}
+	// if log.IsTrace() {
+	// 	cfg.PrintConfig()
+	// }
 	return cfg, nil
 }
 
@@ -63,6 +63,7 @@ func compileRepositoryFile(opts *Options, configfile string, summary *RunSummary
 
 	// run manifest if present
 	if cfg.HasManifest() {
+		log.Tracef("has %d manifest entries", len(cfg.Manifest))
 		err := CompileManifest(summary, opts, cfg, run)
 		if err != nil {
 			return err
@@ -70,15 +71,18 @@ func compileRepositoryFile(opts *Options, configfile string, summary *RunSummary
 	}
 
 	// compile repositories
-	err = CompileRepository(summary, opts, cfg, run)
-	if err != nil {
-		return err
+	if len(cfg.Repositories) > 0 {
+		err = CompileRepository(summary, opts, cfg, run)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
 func CompileRepository(summary *RunSummary, opts *Options, cfg *gc.Config, run *CompiledRun) error {
+	log.Tracef("compiling repository section %s", opts.Section)
 	repos, found := cfg.Repositories[opts.Section]
 	if found == false {
 		return fmt.Errorf("Section not found: %q", opts.Section)

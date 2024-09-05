@@ -21,8 +21,7 @@ func CompileManifest(summary *RunSummary, opts *Options, cfg *gc.Config, run *Co
 			os.Chdir(workingdir)
 		}
 
-		cfg2 := &gc.Config{}
-		err := cfg2.LoadYaml(e.Filename)
+		cfg2, err := LoadConfig(e.Filename)
 		if err != nil {
 			log.Errorf("load %s: %s", e.Filename, err)
 			continue
