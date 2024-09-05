@@ -8,17 +8,16 @@ import (
 	gc "github.com/sigmonsays/git-caddy"
 )
 
-type UpdateRepositories struct {
+type ProcessRepositories struct {
 	Section      string
 	Cfg          *gc.Config
 	Repositories []*gc.Repository
-
-	summary *RunSummary
+	summary      *RunSummary
 }
 
-func (me *UpdateRepositories) Run() error {
-	var doneMx sync.Mutex
+func (me *ProcessRepositories) Run(repos []*CompiledRepository) error {
 	var errors []error
+	var doneMx sync.Mutex
 	ticket := make(chan bool, me.Cfg.Concurrency)
 	var wg sync.WaitGroup
 	donefn := func(err error) {
@@ -31,48 +30,11 @@ func (me *UpdateRepositories) Run() error {
 		wg.Done()
 	}
 
-	var n int
-	for i, repo := range me.Repositories {
-
-		if repo.Section == "" {
-			repo.Section = me.Section
-		}
-		err := repo.Defaults()
-		if err != nil {
-			log.Debugf("repo #%d: %s failed setting defaults: %s", n, repo.Name, err)
-		}
-		n = i + 1
-		err = repo.Validate()
-		if err != nil {
-			log.Warnf("repo #%d: %s failed validation: %s", n, repo.Name, err)
-			continue
-		}
-		if repo.IsEnabled() == false {
-			log.Debugf("repo %s is disabled", repo.Name)
-			continue
-		}
-
-		var repos []*gc.Repository
-
-		if len(repo.Names) > 0 {
-			// expand names
-			for _, name := range repo.Names {
-				repo2 := repo.Copy()
-				repo2.Name = ""
-				repo2.Remote = repo.Remote + name
-				repo2.Defaults()
-				log.Tracef("expanded repo %s", repo2.Remote)
-				repos = append(repos, repo2)
-			}
-		} else {
-			repos = append(repos, repo)
-		}
-
-		for _, r := range repos {
-			wg.Add(1)
-			ticket <- true
-			go UpdateRepo(me.Cfg, r, donefn, me.summary)
-		}
+	for _, crepo := range repos {
+		repo := crepo.Repo
+		wg.Add(1)
+		ticket <- true
+		go ProcessRepo(me.Cfg, repo, donefn, me.summary)
 	}
 
 	wg.Wait()
@@ -88,7 +50,7 @@ func (me *UpdateRepositories) Run() error {
 	return nil
 }
 
-func UpdateRepo(cfg *gc.Config, repo *gc.Repository, done func(error), summary *RunSummary) (err error) {
+func ProcessRepo(cfg *gc.Config, repo *gc.Repository, done func(error), summary *RunSummary) (err error) {
 	summary.IncrScanned()
 
 	log.Debugf("Updating repo %s, remote:%s ", repo.Name, repo.Remote)

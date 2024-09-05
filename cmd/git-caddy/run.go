@@ -34,24 +34,33 @@ func RunRepository(summary *RunSummary, opts *Options, cfg *gc.Config) error {
 	}
 	log.Debugf("concurrency:%d", cfg.Concurrency)
 
-	updateRun := &UpdateRepositories{
+	compile := &CompiledRun{
 		Section:      opts.Section,
 		Cfg:          cfg,
 		Repositories: repos,
 		summary:      summary,
 	}
 
+	compiled, err := compile.Run()
+	if err != nil {
+		return err
+	}
+	log.Tracef("compiled %d repos", len(compiled))
+
+	processRun := &ProcessRepositories{}
+
 	if opts.UpdateInterval == 0 {
-		err := updateRun.Run()
+		err := processRun.Run(compiled)
 		return err
 	}
 
+	// run loop
 	tick := time.NewTicker(time.Duration(opts.UpdateInterval) * time.Second)
 	defer tick.Stop()
 	for {
 		select {
 		case <-tick.C:
-			err := updateRun.Run()
+			err := processRun.Run(compiled)
 			if err != nil {
 				log.Warnf("%s", err)
 			}
