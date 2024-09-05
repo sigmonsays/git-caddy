@@ -9,13 +9,12 @@ import (
 )
 
 type ProcessRepositories struct {
-	Section      string
 	Cfg          *gc.Config
-	Repositories []*gc.Repository
+	Repositories []*CompiledRepository
 	summary      *RunSummary
 }
 
-func (me *ProcessRepositories) Run(repos []*CompiledRepository) error {
+func (me *ProcessRepositories) Run() error {
 	var errors []error
 	var doneMx sync.Mutex
 	ticket := make(chan bool, me.Cfg.Concurrency)
@@ -30,7 +29,7 @@ func (me *ProcessRepositories) Run(repos []*CompiledRepository) error {
 		wg.Done()
 	}
 
-	for _, crepo := range repos {
+	for _, crepo := range me.Repositories {
 		repo := crepo.Repo
 		wg.Add(1)
 		ticket <- true

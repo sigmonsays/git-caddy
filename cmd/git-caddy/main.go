@@ -33,9 +33,15 @@ func main() {
 			if err != nil {
 				ExitError("ReadOptions: %s", err)
 			}
+			// run on a loop
+			if opts.UpdateInterval > 0 {
+				RunLoop(opts, opts.ConfigFile, summary)
+				return
+			}
 			if gc.FileExists(opts.ConfigFile) {
 				err := runRepositoryFile(opts, opts.ConfigFile, summary)
 				ExitIfError(err, "run %s: %s", opts.ConfigFile, err)
+
 			}
 		},
 	}

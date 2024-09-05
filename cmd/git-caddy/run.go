@@ -9,7 +9,6 @@ import (
 
 func runRepositoryFile(opts *Options, configfile string, summary *RunSummary) error {
 	cfg := &gc.Config{}
-
 	log.Infof("run repository file:%s section:%s", configfile, opts.Section)
 	err := cfg.LoadYaml(configfile)
 	if err != nil {
@@ -20,17 +19,32 @@ func runRepositoryFile(opts *Options, configfile string, summary *RunSummary) er
 		cfg.PrintConfig()
 	}
 
-	hasManifest := cfg.HasManifest()
-	if hasManifest {
-		return RunManifest(summary, opts, cfg)
+	// run manifest if present
+	if cfg.HasManifest() {
+		err := RunManifest(summary, opts, cfg)
+		if err != nil {
+			return err
+		}
 	}
-	return RunRepository(summary, opts, cfg)
+
+	// run repositories
+	compiled, err := CompileRepository(summary, opts, cfg)
+	if err != nil {
+		return err
+	}
+
+	err = compiled.Run()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func RunRepository(summary *RunSummary, opts *Options, cfg *gc.Config) error {
+func CompileRepository(summary *RunSummary, opts *Options, cfg *gc.Config) (*ProcessRepositories, error) {
 	repos, found := cfg.Repositories[opts.Section]
 	if found == false {
-		return fmt.Errorf("Section not found: %q", opts.Section)
+		return nil, fmt.Errorf("Section not found: %q", opts.Section)
 	}
 	log.Debugf("concurrency:%d", cfg.Concurrency)
 
@@ -43,29 +57,47 @@ func RunRepository(summary *RunSummary, opts *Options, cfg *gc.Config) error {
 
 	compiled, err := compile.Run()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	log.Tracef("compiled %d repos", len(compiled))
-
 	processRun := &ProcessRepositories{}
+	err = processRun.Run()
+	if err != nil {
+		return nil, err
+	}
+	return processRun, nil
+}
 
-	if opts.UpdateInterval == 0 {
-		err := processRun.Run(compiled)
+func RunLoop(opts *Options, configfile string, summary *RunSummary) error {
+	cfg := &gc.Config{}
+	log.Infof("run repository file:%s section:%s", configfile, opts.Section)
+	err := cfg.LoadYaml(configfile)
+	if err != nil {
 		return err
 	}
 
-	// run loop
+	if log.IsTrace() {
+		cfg.PrintConfig()
+	}
+	// run repositories
+	compiled, err := CompileRepository(summary, opts, cfg)
+	if err != nil {
+		return err
+	}
+	return RunLoopCompiled(opts, compiled)
+}
+
+func RunLoopCompiled(opts *Options, compiled *ProcessRepositories) error {
 	tick := time.NewTicker(time.Duration(opts.UpdateInterval) * time.Second)
 	defer tick.Stop()
 	for {
 		select {
 		case <-tick.C:
-			err := processRun.Run(compiled)
+			err := compiled.Run()
 			if err != nil {
 				log.Warnf("%s", err)
 			}
 		}
 	}
-
 	return nil
 }
