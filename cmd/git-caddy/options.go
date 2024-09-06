@@ -1,8 +1,6 @@
 package main
 
 import (
-	"os"
-
 	gologging "github.com/sigmonsays/go-logging"
 	"github.com/spf13/cobra"
 )
@@ -30,12 +28,6 @@ func ReadOptions(cmd *cobra.Command) (*Options, error) {
 
 	if opts.LogLevel != "" {
 		gologging.SetLogLevel(opts.LogLevel)
-	}
-
-	if opts.WorkingDir != "" {
-		err := os.Chdir(opts.WorkingDir)
-		ExitIfError(err, "Chdir %s: %s", opts.WorkingDir, err)
-		log.Debugf("changed working directory to %s", opts.WorkingDir)
 	}
 
 	return opts, nil
