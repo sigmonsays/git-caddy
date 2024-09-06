@@ -17,6 +17,7 @@ func (me *CompiledRun) Append(ls []*CompiledRepository) {
 	log.Tracef("appended %d, total %d", len(ls), len(me.List))
 }
 
+// main entry point from cobra
 func runRepositoryFile(opts *Options, configfile string, summary *RunSummary) error {
 	cfg, err := LoadConfig(configfile)
 	if err != nil {
@@ -92,6 +93,7 @@ func CompileRepository(summary *RunSummary, opts *Options, cfg *gc.Config, run *
 	compile := &Compile{
 		Section:      opts.Section,
 		Cfg:          cfg,
+		WorkingDir: opts.WorkingDir,
 		Repositories: repos,
 		summary:      summary,
 	}

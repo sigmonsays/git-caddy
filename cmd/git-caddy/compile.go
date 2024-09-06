@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	gc "github.com/sigmonsays/git-caddy"
 )
 
@@ -8,12 +10,13 @@ type Compile struct {
 	Section      string
 	Cfg          *gc.Config
 	Repositories []*gc.Repository
-
-	summary *RunSummary
+	WorkingDir   string
+	summary      *RunSummary
 }
 
 type CompiledRepository struct {
-	Repo *gc.Repository
+	WorkingDir string
+	Repo       *gc.Repository
 }
 
 func (me *Compile) Run() ([]*CompiledRepository, error) {
@@ -47,11 +50,17 @@ func (me *Compile) Run() ([]*CompiledRepository, error) {
 				repo2.Remote = repo.Remote + name
 				repo2.Defaults()
 				log.Tracef("expanded repo %s", repo2.Remote)
-				crepo2 := &CompiledRepository{repo2}
+				crepo2 := &CompiledRepository{
+					WorkingDir: os.ExpandEnv(me.WorkingDir),
+					Repo:       repo2,
+				}
 				ret = append(ret, crepo2)
 			}
 		} else {
-			crepo := &CompiledRepository{repo}
+			crepo := &CompiledRepository{
+				WorkingDir: os.ExpandEnv(me.WorkingDir),
+				Repo:       repo,
+			}
 			ret = append(ret, crepo)
 		}
 	}

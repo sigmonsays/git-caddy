@@ -21,6 +21,7 @@ func CompileManifest(summary *RunSummary, opts *Options, cfg *gc.Config, run *Co
 		}
 		opts2 := opts.Clone()
 		opts2.Section = e.Section
+		opts2.WorkingDir = e.Def.WorkingDir
 
 		err = CompileRepository(summary, opts2, cfg2, run)
 		if err != nil {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 
@@ -45,10 +46,9 @@ func (me *ProcessRepositories) Run() error {
 	}
 
 	for _, crepo := range me.Repositories {
-		repo := crepo.Repo
 		wg.Add(1)
 		ticket <- true
-		go ProcessRepo(me.Opts, me.Cfg, repo, donefn, me.summary)
+		go ProcessRepo(me.Opts, me.Cfg, crepo, donefn, me.summary)
 	}
 
 	wg.Wait()
@@ -64,8 +64,9 @@ func (me *ProcessRepositories) Run() error {
 	return nil
 }
 
-func ProcessRepo(opts *Options, cfg *gc.Config, repo *gc.Repository, done func(error), summary *RunSummary) (err error) {
+func ProcessRepo(opts *Options, cfg *gc.Config, crepo *CompiledRepository, done func(error), summary *RunSummary) (err error) {
 	summary.IncrScanned()
+	repo := crepo.Repo
 
 	log.Debugf("Updating repo %s, remote:%s ", repo.Name, repo.Remote)
 	defer func() {
@@ -74,16 +75,26 @@ func ProcessRepo(opts *Options, cfg *gc.Config, repo *gc.Repository, done func(e
 			summary.IncrErrors()
 		}
 	}()
+
+	// figure out destination directory
+	var destination string
+	if strings.HasPrefix(repo.Destination, "/") {
+		destination = repo.Destination
+	} else {
+		destination = filepath.Join(crepo.WorkingDir, repo.Destination)
+	}
+	log.Tracef("destination %s", destination)
+
 	repoExists := false
 	isDir := false
-	st, err := os.Stat(repo.Destination)
+	st, err := os.Stat(destination)
 	if err == nil {
 		repoExists = true
 		isDir = st.IsDir()
 	}
-	log.Tracef("stat %s; isdir:%v", repo.Destination, isDir)
+	log.Tracef("stat %s; isdir:%v", destination, isDir)
 	if err == nil && isDir == false {
-		return NewRepoErrorf("Update", repo.Name, "%s is not a directory", repo.Destination)
+		return NewRepoErrorf("Update", repo.Name, "%s is not a directory", destination)
 	}
 
 	ctx := &gc.Context{
@@ -91,12 +102,12 @@ func ProcessRepo(opts *Options, cfg *gc.Config, repo *gc.Repository, done func(e
 	}
 
 	if opts.Pretend {
-		log.Infof("Pretend %s (exists:%v)", repo.Name, repoExists)
+		log.Infof("pretend: repo %s at %s (exists:%v)", repo.Name, destination, repoExists)
 		return nil
 	}
 
 	log.Tracef("repo:%s destination:%s repoExists:%v noClone:%v",
-		repo.Name, repo.Destination, repoExists, repo.NoClone)
+		repo.Name, destination, repoExists, repo.NoClone)
 	if repoExists == false && repo.NoClone == false {
 		clone := &Clone{cfg, repo}
 		err = clone.Run(ctx)
