@@ -21,7 +21,6 @@ func env_GIT_SSH_COMMAND(e []string, identityFile string) []string {
 }
 
 func populateEnv(e []string, cfg *gc.Config, r *gc.Repository) []string {
-
 	// see if we need to set the GIT_SSH_COMMAND for a custom identity
 	// IdentityFile overides a higher level config
 	if r.IdentityFile != "" {
