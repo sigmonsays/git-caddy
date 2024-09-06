@@ -50,8 +50,8 @@ func (me *ProcessRepositories) Run() error {
 	for i, crepo := range me.Repositories {
 		wg.Add(1)
 		ticket <- true
-		i := i
-		go ProcessRepo(i, me.Opts, me.Cfg, crepo, donefn, me.summary)
+		n := i + 1
+		go ProcessRepo(n, me.Opts, me.Cfg, crepo, donefn, me.summary)
 	}
 
 	wg.Wait()
@@ -71,7 +71,8 @@ func ProcessRepo(jobid int, opts *Options, cfg *gc.Config, crepo *CompiledReposi
 	summary.IncrScanned()
 	repo := crepo.Repo
 
-	dlog := gologging.NewStandardLogger(log.GetLevel())
+	lvl, _ := gologging.LevelFromString(log.GetLevel())
+	dlog := gologging.NewStandardLogger3(lvl, 5)
 	log = gologging.NewPrefixLogger(fmt.Sprintf("job%d %s: ", jobid, crepo.Repo.Name), dlog)
 
 	log.Debugf("Updating repo %s, remote:%s ", repo.Name, repo.Remote)
