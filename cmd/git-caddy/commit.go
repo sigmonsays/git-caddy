@@ -12,7 +12,7 @@ type Commit struct {
 	Repo *gc.Repository
 }
 
-func (me *Commit) ChangedLocally() (bool, error) {
+func (me *Commit) ChangedLocally(dir string) (bool, error) {
 
 	cmdline := []string{
 		"git", "diff-index", "--quiet", "HEAD", "--",
@@ -20,7 +20,7 @@ func (me *Commit) ChangedLocally() (bool, error) {
 	c := exec.Command(cmdline[0], cmdline[1:]...)
 	c.Stdout = NewPrefixWriter(os.Stdout, me.Repo.Prefix("commit"))
 	c.Stderr = NewPrefixWriter(os.Stderr, me.Repo.Prefix("commit"))
-	c.Dir = me.Repo.Destination
+	c.Dir = dir
 	c.Env = populateEnv(c.Env, me.Cfg, me.Repo)
 	err := c.Run()
 	if err != nil {
@@ -38,7 +38,7 @@ func (me *Commit) ChangedLocally() (bool, error) {
 
 func (me *Commit) Run(ctx *gc.Context) error {
 
-	changed, err := me.ChangedLocally()
+	changed, err := me.ChangedLocally(ctx.ResolvedWorkingDir)
 	if err != nil {
 		return NewRepoError("Commit.ChangedLocally", me.Repo.Name).WithError(err)
 	}
@@ -62,7 +62,7 @@ func (me *Commit) Run(ctx *gc.Context) error {
 	c := exec.Command(cmdline[0], cmdline[1:]...)
 	c.Stdout = NewPrefixWriter(os.Stdout, me.Repo.Prefix("commit"))
 	c.Stderr = NewPrefixWriter(os.Stderr, me.Repo.Prefix("commit"))
-	c.Dir = me.Repo.Destination
+	c.Dir = ctx.ResolvedWorkingDir
 	c.Env = populateEnv(c.Env, me.Cfg, me.Repo)
 	err = c.Run()
 	if err != nil {

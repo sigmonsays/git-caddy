@@ -98,7 +98,8 @@ func ProcessRepo(opts *Options, cfg *gc.Config, crepo *CompiledRepository, done 
 	}
 
 	ctx := &gc.Context{
-		RepoExists: repoExists,
+		RepoExists:         repoExists,
+		ResolvedWorkingDir: destination,
 	}
 
 	if opts.Pretend {

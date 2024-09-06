@@ -25,19 +25,19 @@ func (me *Pull) Run(ctx *gc.Context) (*PullResult, error) {
 	ret := &PullResult{}
 
 	// collect hashes
-	branch, err := GetUpstreamBranch(me.Cfg, me.Repo, me.Repo.Destination)
+	branch, err := GetUpstreamBranch(me.Cfg, me.Repo, ctx.ResolvedWorkingDir)
 	if err == nil {
 		ctx.UpstreamBranchName = branch
 		log.Tracef("%s upstream branch %s", me.Repo.Name, branch)
 	}
-	lhash, err := GetLocalHash(me.Cfg, me.Repo, me.Repo.Destination, branch)
+	lhash, err := GetLocalHash(me.Cfg, me.Repo, ctx.ResolvedWorkingDir, branch)
 	if err == nil {
 		ctx.LocalHash = lhash
 		log.Tracef("%s local hash %s", me.Repo.Name, lhash)
 	} else {
 		log.Warnf("%s get local hash: %s", me.Repo.Name, err)
 	}
-	rhash, err := GetRemoteHash(me.Cfg, me.Repo, me.Repo.Destination, branch)
+	rhash, err := GetRemoteHash(me.Cfg, me.Repo, ctx.ResolvedWorkingDir, branch)
 	if err == nil {
 		ctx.RemoteHash = rhash
 		log.Tracef("%s remote hash %s", me.Repo.Name, rhash)

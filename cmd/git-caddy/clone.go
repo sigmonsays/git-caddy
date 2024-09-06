@@ -20,10 +20,10 @@ func (me *Clone) Run(ctx *gc.Context) error {
 		"clone",
 	}
 	log.Tracef("git clone repo %s, %s to %s",
-		me.Repo.Name, me.Repo.Remote, me.Repo.Destination)
+		me.Repo.Name, me.Repo.Remote, ctx.ResolvedWorkingDir)
 
 	cmdline = append(cmdline, me.Repo.Remote)
-	cmdline = append(cmdline, me.Repo.Destination)
+	cmdline = append(cmdline, ctx.ResolvedWorkingDir)
 	if me.Repo.Depth > 0 {
 		cmdline = append(cmdline, "--depth",
 			fmt.Sprintf("%d", me.Repo.Depth))
