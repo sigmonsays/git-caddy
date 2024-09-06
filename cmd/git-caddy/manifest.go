@@ -23,6 +23,9 @@ func CompileManifest(summary *RunSummary, opts *Options, cfg *gc.Config, run *Co
 		opts2.Section = e.Section
 		opts2.WorkingDir = e.Def.WorkingDir
 
+		// merge identities together
+		cfg2.Identities = append(cfg2.Identities, cfg.Identities...)
+
 		err = CompileRepository(summary, opts2, cfg2, run)
 		if err != nil {
 			log.Errorf("run %s: %s", e.Filename, err)

@@ -93,7 +93,7 @@ func CompileRepository(summary *RunSummary, opts *Options, cfg *gc.Config, run *
 	compile := &Compile{
 		Section:      opts.Section,
 		Cfg:          cfg,
-		WorkingDir: opts.WorkingDir,
+		WorkingDir:   opts.WorkingDir,
 		Repositories: repos,
 		summary:      summary,
 	}

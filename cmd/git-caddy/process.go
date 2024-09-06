@@ -51,7 +51,7 @@ func (me *ProcessRepositories) Run() error {
 		wg.Add(1)
 		ticket <- true
 		n := i + 1
-		go ProcessRepo(n, me.Opts, me.Cfg, crepo, donefn, me.summary)
+		go ProcessRepo(n, me.Opts, crepo.Cfg, crepo, donefn, me.summary)
 	}
 
 	wg.Wait()

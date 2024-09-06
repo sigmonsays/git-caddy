@@ -11,7 +11,7 @@ func env_GIT_SSH_COMMAND(e []string, identityFile string) []string {
 
 	sshbin, err := exec.LookPath("ssh")
 	if err != nil {
-		sshbin="ssh"
+		sshbin = "ssh"
 	}
 	ssh_command := fmt.Sprintf("%s -i %s", sshbin, identityFile)
 	log.Tracef("setting GIT_SSH_COMMAND to %q", ssh_command)
@@ -30,6 +30,10 @@ func populateEnv(e []string, cfg *gc.Config, r *gc.Repository) []string {
 	}
 
 	// Check if there is a matching identities block
+	if len(cfg.Identities) == 0 {
+		return e
+	}
+	log.Tracef("Looking through %d identities for a match", len(cfg.Identities))
 	idmap := make(map[string]*gc.Identity, 0)
 	for _, ident := range cfg.Identities {
 		for _, repo := range ident.Repositories {

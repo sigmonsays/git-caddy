@@ -15,6 +15,8 @@ type Compile struct {
 }
 
 type CompiledRepository struct {
+	// config for the processed repo
+	Cfg        *gc.Config
 	WorkingDir string
 	Repo       *gc.Repository
 }
@@ -53,6 +55,7 @@ func (me *Compile) Run() ([]*CompiledRepository, error) {
 				crepo2 := &CompiledRepository{
 					WorkingDir: os.ExpandEnv(me.WorkingDir),
 					Repo:       repo2,
+					Cfg:        me.Cfg,
 				}
 				ret = append(ret, crepo2)
 			}
@@ -60,6 +63,7 @@ func (me *Compile) Run() ([]*CompiledRepository, error) {
 			crepo := &CompiledRepository{
 				WorkingDir: os.ExpandEnv(me.WorkingDir),
 				Repo:       repo,
+					Cfg:        me.Cfg,
 			}
 			ret = append(ret, crepo)
 		}
