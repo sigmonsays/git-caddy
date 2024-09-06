@@ -1,12 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
 
 	gc "github.com/sigmonsays/git-caddy"
+	gologging "github.com/sigmonsays/go-logging"
 )
 
 func RunCompiled(opts *Options, cfg *gc.Config, summary *RunSummary, run *CompiledRun) error {
@@ -45,10 +47,11 @@ func (me *ProcessRepositories) Run() error {
 		wg.Done()
 	}
 
-	for _, crepo := range me.Repositories {
+	for i, crepo := range me.Repositories {
 		wg.Add(1)
 		ticket <- true
-		go ProcessRepo(me.Opts, me.Cfg, crepo, donefn, me.summary)
+		i := i
+		go ProcessRepo(i, me.Opts, me.Cfg, crepo, donefn, me.summary)
 	}
 
 	wg.Wait()
@@ -64,9 +67,12 @@ func (me *ProcessRepositories) Run() error {
 	return nil
 }
 
-func ProcessRepo(opts *Options, cfg *gc.Config, crepo *CompiledRepository, done func(error), summary *RunSummary) (err error) {
+func ProcessRepo(jobid int, opts *Options, cfg *gc.Config, crepo *CompiledRepository, done func(error), summary *RunSummary) (err error) {
 	summary.IncrScanned()
 	repo := crepo.Repo
+
+	dlog := gologging.NewStandardLogger(log.GetLevel())
+	log = gologging.NewPrefixLogger(fmt.Sprintf("job%d %s: ", jobid, crepo.Repo.Name), dlog)
 
 	log.Debugf("Updating repo %s, remote:%s ", repo.Name, repo.Remote)
 	defer func() {
