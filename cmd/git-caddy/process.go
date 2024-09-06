@@ -71,11 +71,12 @@ func ProcessRepo(jobid int, opts *Options, cfg *gc.Config, crepo *CompiledReposi
 	summary.IncrScanned()
 	repo := crepo.Repo
 
+	// create new log object
 	lvl, _ := gologging.LevelFromString(log.GetLevel())
 	dlog := gologging.NewStandardLogger3(lvl, 5)
-	log = gologging.NewPrefixLogger(fmt.Sprintf("job%d %s: ", jobid, crepo.Repo.Name), dlog)
+	rlog := gologging.NewPrefixLogger(fmt.Sprintf("job%d %s: ", jobid, crepo.Repo.Name), dlog)
 
-	log.Debugf("Updating repo %s, remote:%s ", repo.Name, repo.Remote)
+	rlog.Debugf("Updating repo %s, remote:%s ", repo.Name, repo.Remote)
 	defer func() {
 		done(err)
 		if err != nil {
@@ -90,7 +91,7 @@ func ProcessRepo(jobid int, opts *Options, cfg *gc.Config, crepo *CompiledReposi
 	} else {
 		destination = filepath.Join(crepo.WorkingDir, repo.Destination)
 	}
-	log.Tracef("destination %s", destination)
+	rlog.Tracef("destination %s", destination)
 
 	repoExists := false
 	isDir := false
@@ -99,7 +100,7 @@ func ProcessRepo(jobid int, opts *Options, cfg *gc.Config, crepo *CompiledReposi
 		repoExists = true
 		isDir = st.IsDir()
 	}
-	log.Tracef("stat %s; isdir:%v", destination, isDir)
+	rlog.Tracef("stat %s; isdir:%v", destination, isDir)
 	if err == nil && isDir == false {
 		return NewRepoErrorf("Update", repo.Name, "%s is not a directory", destination)
 	}
@@ -110,11 +111,11 @@ func ProcessRepo(jobid int, opts *Options, cfg *gc.Config, crepo *CompiledReposi
 	}
 
 	if opts.Pretend {
-		log.Infof("pretend: repo %s at %s (exists:%v)", repo.Name, destination, repoExists)
+		rlog.Infof("pretend: repo %s at %s (exists:%v)", repo.Name, destination, repoExists)
 		return nil
 	}
 
-	log.Tracef("repo:%s destination:%s repoExists:%v noClone:%v",
+	rlog.Tracef("repo:%s destination:%s repoExists:%v noClone:%v",
 		repo.Name, destination, repoExists, repo.NoClone)
 	if repoExists == false && repo.NoClone == false {
 		clone := &Clone{cfg, repo}
@@ -162,6 +163,6 @@ func ProcessRepo(jobid int, opts *Options, cfg *gc.Config, crepo *CompiledReposi
 		return err
 	}
 
-	log.Tracef("UpdateRepo %s: finished without error", repo.Name)
+	rlog.Tracef("UpdateRepo %s: finished without error", repo.Name)
 	return nil
 }
