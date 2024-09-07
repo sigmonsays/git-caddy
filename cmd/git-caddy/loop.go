@@ -33,6 +33,7 @@ func RunLoopCompiled(cfg *gc.Config, summary *RunSummary, opts *Options, run *Co
 	for {
 		select {
 		case <-tick.C:
+			log.Infof("running ... ")
 			err := RunCompiled(opts, cfg, summary, run)
 			if err != nil {
 				log.Warnf("%s", err)
