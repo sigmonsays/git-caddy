@@ -34,21 +34,34 @@ func main() {
 				ExitError("ReadOptions: %s", err)
 			}
 
-			// run on a loop
-			if opts.UpdateInterval > 0 {
-				RunLoop(opts, opts.ConfigFile, summary)
-				return
-			}
-
 			// otherwise, no loop, run repository file
 			if gc.FileExists(opts.ConfigFile) {
 				err := runRepositoryFile(opts, opts.ConfigFile, summary)
 				ExitIfError(err, "run %s: %s", opts.ConfigFile, err)
-
 			}
 		},
 	}
 	rootCmd.AddCommand(runCmd)
+
+	var loopCmd = &cobra.Command{
+		Use:   "loop",
+		Short: "run config file on a interval",
+		Run: func(cmd *cobra.Command, args []string) {
+			summary := NewRunSummary()
+			summary.Start()
+			defer FinishSummary(summary)
+			opts, err := ReadOptions(cmd, args)
+			if err != nil {
+				ExitError("ReadOptions: %s", err)
+			}
+
+			err = RunLoop(opts, opts.ConfigFile, summary)
+			if err != nil {
+				ExitError("run loop: %s", err)
+			}
+		},
+	}
+	rootCmd.AddCommand(loopCmd)
 
 	var discoverCmd = &cobra.Command{
 		Use:   "discover",

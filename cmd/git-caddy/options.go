@@ -9,7 +9,7 @@ func DefaultOptions() *Options {
 	opts := &Options{
 		ConfigFile:     "repositories.yaml",
 		WorkingDir:     "",
-		UpdateInterval: 0,
+		UpdateInterval: 60,
 		Section:        "repos",
 		LogLevel:       "info",
 	}
@@ -22,7 +22,7 @@ func ReadOptions(cmd *cobra.Command, args []string) (*Options, error) {
 	opts.Section, _ = cmd.Flags().GetString("section")
 	opts.WorkingDir, _ = cmd.Flags().GetString("workdir")
 	opts.LogLevel, _ = cmd.Flags().GetString("loglevel")
-	opts.UpdateInterval, _ = cmd.Flags().GetInt("interval")
+	opts.UpdateInterval, _ = cmd.Flags().GetInt32("interval")
 	opts.Pretend, _ = cmd.Flags().GetBool("pretend")
 
 	if opts.LogLevel != "" {
@@ -43,7 +43,7 @@ type Options struct {
 	Section        string
 	ConfigFile     string
 	WorkingDir     string
-	UpdateInterval int
+	UpdateInterval int32
 	Discover       bool
 	Version        bool
 	Pretend        bool

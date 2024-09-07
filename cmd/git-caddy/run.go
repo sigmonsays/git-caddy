@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"time"
 
 	gc "github.com/sigmonsays/git-caddy"
 )
@@ -87,41 +86,6 @@ func CompileRepository(summary *RunSummary, opts *Options, cfg *gc.Config, run *
 		return err
 	}
 	run.Append(compiled)
-	return nil
-}
-
-func RunLoop(opts *Options, configfile string, summary *RunSummary) error {
-	cfg := &gc.Config{}
-	log.Infof("run repository file:%s section:%s", configfile, opts.Section)
-	err := cfg.LoadYaml(configfile)
-	if err != nil {
-		return err
-	}
-	run := &CompiledRun{}
-
-	if log.IsTrace() {
-		cfg.PrintConfig()
-	}
-	// run repositories
-	err = CompileRepository(summary, opts, cfg, run)
-	if err != nil {
-		return err
-	}
-	return RunLoopCompiled(cfg, summary, opts, run)
-}
-
-func RunLoopCompiled(cfg *gc.Config, summary *RunSummary, opts *Options, run *CompiledRun) error {
-	tick := time.NewTicker(time.Duration(opts.UpdateInterval) * time.Second)
-	defer tick.Stop()
-	for {
-		select {
-		case <-tick.C:
-			err := RunCompiled(opts, cfg, summary, run)
-			if err != nil {
-				log.Warnf("%s", err)
-			}
-		}
-	}
 	return nil
 }
 
