@@ -43,7 +43,7 @@ func runRepositoryFile(opts *Options, configfile string, summary *RunSummary) er
 
 func LoadConfig(configfile string) (*gc.Config, error) {
 	cfg := &gc.Config{}
-	log.Infof("load config file: %s", configfile)
+	log.Debugf("load config file: %s", configfile)
 	err := cfg.LoadYaml(configfile)
 	if err != nil {
 		return nil, err
