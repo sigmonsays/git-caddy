@@ -19,6 +19,7 @@ func (me *CompiledRun) Append(ls []*CompiledRepository) {
 
 // main entry point from cobra
 func runRepositoryFile(opts *Options, configfile string, summary *RunSummary) error {
+	log.Infof("Load config %s", configfile)
 	cfg, err := LoadConfig(configfile)
 	if err != nil {
 		return err
@@ -126,7 +127,7 @@ func RunLoopCompiled(cfg *gc.Config, summary *RunSummary, opts *Options, run *Co
 
 func LoadConfig(configfile string) (*gc.Config, error) {
 	cfg := &gc.Config{}
-	log.Infof("load config %s", configfile)
+	log.Debugf("load config %s", configfile)
 	err := cfg.LoadYaml(configfile)
 	if err != nil {
 		return nil, err
