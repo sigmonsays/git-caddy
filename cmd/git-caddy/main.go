@@ -29,10 +29,11 @@ func main() {
 			summary := NewRunSummary()
 			summary.Start()
 			defer FinishSummary(summary)
-			opts, err := ReadOptions(cmd)
+			opts, err := ReadOptions(cmd, args)
 			if err != nil {
 				ExitError("ReadOptions: %s", err)
 			}
+
 			// run on a loop
 			if opts.UpdateInterval > 0 {
 				RunLoop(opts, opts.ConfigFile, summary)
@@ -53,7 +54,7 @@ func main() {
 		Use:   "discover",
 		Short: "discover repositories",
 		Run: func(cmd *cobra.Command, args []string) {
-			opts, err := ReadOptions(cmd)
+			opts, err := ReadOptions(cmd, args)
 			if err != nil {
 				ExitError("ReadOptions: %s", err)
 			}
@@ -80,7 +81,6 @@ func main() {
 	dopts := DefaultOptions()
 	rootCmd.PersistentFlags().StringP("loglevel", "l", dopts.LogLevel, "log level")
 	rootCmd.PersistentFlags().StringP("section", "s", dopts.Section, "section name")
-	rootCmd.PersistentFlags().StringP("config", "c", dopts.ConfigFile, "repositories.yaml")
 	rootCmd.PersistentFlags().StringP("workdir", "W", dopts.WorkingDir, "working directory")
 	rootCmd.PersistentFlags().Int32P("interval", "i", int32(dopts.UpdateInterval), "update interval")
 	rootCmd.PersistentFlags().BoolP("pretend", "p", dopts.Pretend, "pretend mode")
