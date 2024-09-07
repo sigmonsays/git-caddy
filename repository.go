@@ -20,6 +20,7 @@ type Repository struct {
 	IdentityFile string   `yaml:"identity_file"`
 	AddFiles     string   `yaml:"add_files"`
 	NoClone      bool     `yaml:"no_clone"`
+	Tags         string   `yaml:"tags"`
 }
 
 func (me *Repository) Copy() *Repository {
@@ -35,6 +36,7 @@ func (me *Repository) Copy() *Repository {
 	cp.IdentityFile = me.IdentityFile
 	cp.AddFiles = me.AddFiles
 	cp.NoClone = me.NoClone
+	cp.Tags = me.Tags
 	return cp
 }
 func (me *Repository) IsEnabled() bool {
@@ -52,14 +54,6 @@ func (me *Repository) Defaults() error {
 
 	// fill in name and destination from the remote if possible
 	if me.Name == "" || me.Destination == "" {
-		// // to parse as a url we need a prefix://
-		// i := strings.Index(me.Remote, "//:")
-		// var remote string
-		// if i == -1 {
-		// 	remote = "default://" + me.Remote
-		// } else {
-		// 	remote = me.Remote
-		// }
 		p, err := giturl.Parse(me.Remote)
 		if err != nil {
 			return err

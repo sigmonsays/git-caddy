@@ -13,6 +13,16 @@ type Config struct {
 	Verbose      bool                     `yaml:"verbose"`
 	Repositories map[string][]*Repository `yaml:"repositories"`
 	Identities   []*Identity              `yaml:"identities"`
+	Manifest     []*ManifestDef           `yaml:"manifest"`
+}
+
+func (c *Config) HasManifest() bool {
+	return len(c.Manifest) > 0
+}
+func (c *Config) GetManifest() *ManifestConfig {
+	return &ManifestConfig{
+		Manifest: c.Manifest,
+	}
 }
 
 func (c *Config) LoadYaml(path string) error {
@@ -47,7 +57,6 @@ func (c *Config) LoadYamlBuffer(buf []byte) error {
 }
 
 func (c *Config) FixupConfig() error {
-
 	if c.Concurrency == 0 {
 		c.Concurrency = 5
 	}

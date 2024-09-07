@@ -25,19 +25,19 @@ func (me *Pull) Run(ctx *gc.Context) (*PullResult, error) {
 	ret := &PullResult{}
 
 	// collect hashes
-	branch, err := GetUpstreamBranch(me.Cfg, me.Repo, me.Repo.Destination)
+	branch, err := GetUpstreamBranch(me.Cfg, me.Repo, ctx.ResolvedWorkingDir)
 	if err == nil {
 		ctx.UpstreamBranchName = branch
 		log.Tracef("%s upstream branch %s", me.Repo.Name, branch)
 	}
-	lhash, err := GetLocalHash(me.Cfg, me.Repo, me.Repo.Destination, branch)
+	lhash, err := GetLocalHash(me.Cfg, me.Repo, ctx.ResolvedWorkingDir, branch)
 	if err == nil {
 		ctx.LocalHash = lhash
 		log.Tracef("%s local hash %s", me.Repo.Name, lhash)
 	} else {
 		log.Warnf("%s get local hash: %s", me.Repo.Name, err)
 	}
-	rhash, err := GetRemoteHash(me.Cfg, me.Repo, me.Repo.Destination, branch)
+	rhash, err := GetRemoteHash(me.Cfg, me.Repo, ctx.ResolvedWorkingDir, branch)
 	if err == nil {
 		ctx.RemoteHash = rhash
 		log.Tracef("%s remote hash %s", me.Repo.Name, rhash)
@@ -60,19 +60,19 @@ func (me *Pull) Run(ctx *gc.Context) (*PullResult, error) {
 		"-q", "--no-edit", "--all",
 	}
 	log.Tracef("git pull %s", me.Repo.Name)
-	err = RepoCommand("pull", me.Cfg, me.Repo, cmdline)
+	err = RepoCommand("pull", me.Cfg, me.Repo, ctx.ResolvedWorkingDir, cmdline)
 	if err != nil {
 		return nil, NewRepoError("Pull", me.Repo.Name).WithError(err)
 	}
 	return ret, nil
 }
 
-func RepoCommand(prefix string, cfg *gc.Config, repo *gc.Repository, cmdline []string) error {
+func RepoCommand(prefix string, cfg *gc.Config, repo *gc.Repository, dir string, cmdline []string) error {
 	log.Tracef("repo command: %v", cmdline)
 	c := exec.Command(cmdline[0], cmdline[1:]...)
 	c.Stdout = NewPrefixWriter(os.Stdout, repo.Prefix(prefix))
 	c.Stderr = NewPrefixWriter(os.Stderr, repo.Prefix(prefix))
-	c.Dir = repo.Destination
+	c.Dir = dir
 	c.Env = populateEnv(c.Env, cfg, repo)
 	err := c.Run()
 	if err != nil {

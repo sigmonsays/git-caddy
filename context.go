@@ -4,6 +4,9 @@ package gitcaddy
 type Context struct {
 	RepoExists bool
 
+	// resolved working directory (absolute path)
+	ResolvedWorkingDir string
+
 	// the remote branch name, as if you just cloned the repo
 	UpstreamBranchName string
 
