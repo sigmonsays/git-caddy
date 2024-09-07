@@ -36,7 +36,7 @@ func makeControlSocket(cfg *gc.Config, r *gc.Repository, ident string) string {
 	// maybe IdentitiesOnly=yes  ?
 	ret := " -oControlMaster=auto "
 	ret += " -oControlPersist=yes "
-	ret += " -oControlPath=/tmp/ssh-git-caddy-%u-%h-%n:%p-" + b
+	ret += " -oControlPath=/tmp/ssh-git-caddy-%u-%h-%n-%p-" + b
 	return ret
 }
 func populateEnv(e []string, cfg *gc.Config, r *gc.Repository) []string {

@@ -19,13 +19,14 @@ func (me *CompiledRun) Append(ls []*CompiledRepository) {
 
 // main entry point from cobra
 func runRepositoryFile(opts *Options, configfile string, summary *RunSummary) error {
+	log.Infof("Load config %s", configfile)
 	cfg, err := LoadConfig(configfile)
 	if err != nil {
 		return err
 	}
 
 	run := &CompiledRun{}
-	err = compileRepositoryFile(opts, configfile, summary, run)
+	err = compileRepositoryFile(opts, cfg, configfile, summary, run)
 	if err != nil {
 		return err
 	}
@@ -41,26 +42,9 @@ func runRepositoryFile(opts *Options, configfile string, summary *RunSummary) er
 	return nil
 }
 
-func LoadConfig(configfile string) (*gc.Config, error) {
-	cfg := &gc.Config{}
-	log.Debugf("load config file: %s", configfile)
-	err := cfg.LoadYaml(configfile)
-	if err != nil {
-		return nil, err
-	}
-	// if log.IsTrace() {
-	// 	cfg.PrintConfig()
-	// }
-	return cfg, nil
-}
-
 // reads configfile and popultes the CompiledRun with repositories
 // loads manifests as well
-func compileRepositoryFile(opts *Options, configfile string, summary *RunSummary, run *CompiledRun) error {
-	cfg, err := LoadConfig(configfile)
-	if err != nil {
-		return err
-	}
+func compileRepositoryFile(opts *Options, cfg *gc.Config, configfile string, summary *RunSummary, run *CompiledRun) error {
 
 	// run manifest if present
 	if cfg.HasManifest() {
@@ -73,7 +57,7 @@ func compileRepositoryFile(opts *Options, configfile string, summary *RunSummary
 
 	// compile repositories
 	if len(cfg.Repositories) > 0 {
-		err = CompileRepository(summary, opts, cfg, run)
+		err := CompileRepository(summary, opts, cfg, run)
 		if err != nil {
 			return err
 		}
@@ -139,4 +123,17 @@ func RunLoopCompiled(cfg *gc.Config, summary *RunSummary, opts *Options, run *Co
 		}
 	}
 	return nil
+}
+
+func LoadConfig(configfile string) (*gc.Config, error) {
+	cfg := &gc.Config{}
+	log.Debugf("load config %s", configfile)
+	err := cfg.LoadYaml(configfile)
+	if err != nil {
+		return nil, err
+	}
+	// if log.IsTrace() {
+	// 	cfg.PrintConfig()
+	// }
+	return cfg, nil
 }

@@ -16,11 +16,10 @@ func DefaultOptions() *Options {
 	return opts
 }
 
-func ReadOptions(cmd *cobra.Command) (*Options, error) {
+func ReadOptions(cmd *cobra.Command, args []string) (*Options, error) {
 	opts := DefaultOptions()
 
 	opts.Section, _ = cmd.Flags().GetString("section")
-	opts.ConfigFile, _ = cmd.Flags().GetString("config")
 	opts.WorkingDir, _ = cmd.Flags().GetString("workdir")
 	opts.LogLevel, _ = cmd.Flags().GetString("loglevel")
 	opts.UpdateInterval, _ = cmd.Flags().GetInt("interval")
@@ -28,6 +27,12 @@ func ReadOptions(cmd *cobra.Command) (*Options, error) {
 
 	if opts.LogLevel != "" {
 		gologging.SetLogLevel(opts.LogLevel)
+	}
+	// first argument is config file
+	if len(args) > 0 {
+		opts.ConfigFile = args[0]
+	} else {
+		opts.ConfigFile = "repositories.yaml"
 	}
 
 	return opts, nil
