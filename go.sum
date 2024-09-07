@@ -4,6 +4,8 @@ github.com/fsnotify/fsnotify v1.4.9/go.mod h1:znqG4EE+3YCdAaPaxE2ZRY/06pZUdp0tY4
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
+github.com/shurcooL/go v0.0.0-20230706063926-5fe729b41b3a h1:ZHfoO7ZJhws9NU1kzZhStUnnVQiPtDe1PzpUnc6HirU=
+github.com/shurcooL/go v0.0.0-20230706063926-5fe729b41b3a/go.mod h1:DNrlr0AR9NsHD/aoc2pPeu4uSBZ/71yCHkR42yrzW3M=
 github.com/sigmonsays/go-logging v0.0.0-20170415192813-93f4813d2694 h1:Mj7zYpc19leanFgX83o107yxP2f89/F1TFjZSQxoEhI=
 github.com/sigmonsays/go-logging v0.0.0-20170415192813-93f4813d2694/go.mod h1:6+xYjK0jIspthgQ2ScYbhbfKk/rAbwkniV704uQJsxA=
 github.com/spf13/cobra v1.8.1 h1:e5/vxKd/rZsfSJMUX1agtjeTDf+qv1/JdBF8gg5k9ZM=

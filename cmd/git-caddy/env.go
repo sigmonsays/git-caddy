@@ -1,30 +1,47 @@
 package main
 
 import (
-	"fmt"
 	"os/exec"
+	"path/filepath"
+	"strings"
 
+	"github.com/shurcooL/go/osutil"
 	gc "github.com/sigmonsays/git-caddy"
 )
 
-func env_GIT_SSH_COMMAND(e []string, identityFile string) []string {
+func env_ssh_command(
+	cfg *gc.Config,
+	r *gc.Repository,
+	e []string,
+	identityFile string) []string {
 
 	sshbin, err := exec.LookPath("ssh")
 	if err != nil {
 		sshbin = "ssh"
 	}
-	ssh_command := fmt.Sprintf("%s -i %s", sshbin, identityFile)
-	log.Tracef("setting GIT_SSH_COMMAND to %q", ssh_command)
-
-	e = append(e, "GIT_SSH_COMMAND="+ssh_command)
-	return e
+	ssh_opts := makeControlSocket(cfg, r, identityFile)
+	if identityFile != "" {
+		ssh_opts += " -i " + identityFile
+	}
+	ssh_command := sshbin + " " + strings.Trim(ssh_opts, " ")
+	log.Tracef("repo %s: setting GIT_SSH_COMMAND to %q", r.Name, ssh_command)
+	env := osutil.Environ([]string{})
+	env.Set("GIT_SSH_COMMAND", ssh_command)
+	return env
 }
 
+func makeControlSocket(cfg *gc.Config, r *gc.Repository, ident string) string {
+	// todo: Do a better job with the identity file
+	b := filepath.Base(ident)
+	ret := " -oControlMaster=auto "
+	ret += " -oControlPersist=yes "
+	ret += " -oControlPath=/tmp/ssh-git-caddy-%u-%h-%n:%p-" + b
+	return ret
+}
 func populateEnv(e []string, cfg *gc.Config, r *gc.Repository) []string {
-	// see if we need to set the GIT_SSH_COMMAND for a custom identity
-	// IdentityFile overides a higher level config
+
 	if r.IdentityFile != "" {
-		e = env_GIT_SSH_COMMAND(e, r.IdentityFile)
+		e = env_ssh_command(cfg, r, e, r.IdentityFile)
 		return e
 	}
 
@@ -39,17 +56,13 @@ func populateEnv(e []string, cfg *gc.Config, r *gc.Repository) []string {
 			idmap[repo] = ident
 		}
 	}
-
 	identity, found := idmap[r.Section]
 	if found == false {
 		return e
 	}
-
 	log.Tracef("Found identity configure for section %s, identity_file %s",
 		r.Section, identity.IdentityFile)
-
-	e = env_GIT_SSH_COMMAND(e, identity.IdentityFile)
+	e = env_ssh_command(cfg, r, e, identity.IdentityFile)
 	log.Tracef("env %+v", e)
-
 	return e
 }
