@@ -53,6 +53,11 @@ func (me *Pull) Run(ctx *gc.Context) (*PullResult, error) {
 		ret.Changed = true
 	}
 
+	// do not pull if the hashes are the same
+	if lhash == rhash && lhash != "" {
+		return ret, nil
+	}
+
 	// perform git pull
 	cmdline := []string{
 		"git",

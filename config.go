@@ -10,6 +10,7 @@ import (
 
 type Config struct {
 	Concurrency  int                      `yaml:"concurrency"`
+	SetHomeEnv   bool                     `yaml:"set_home_env"`
 	Verbose      bool                     `yaml:"verbose"`
 	Repositories map[string][]*Repository `yaml:"repositories"`
 	Identities   []*Identity              `yaml:"identities"`
