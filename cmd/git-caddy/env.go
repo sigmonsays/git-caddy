@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -11,6 +12,10 @@ import (
 )
 
 func populateEnv(e []string, cfg *gc.Config, r *gc.Repository) []string {
+	homedir := os.Getenv("HOME")
+
+	// set users home
+	e = append(e, fmt.Sprintf("HOME=%s", homedir))
 
 	if r.IdentityFile != "" {
 		e = env_ssh_command(cfg, r, e, r.IdentityFile)

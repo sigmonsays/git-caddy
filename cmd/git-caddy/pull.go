@@ -85,6 +85,8 @@ func RepoCommand(prefix string, cfg *gc.Config, repo *gc.Repository, dir string,
 func GetUpstreamBranch(cfg *gc.Config, repo *gc.Repository, dir string) (string, error) {
 	// git ls-remote https://github.com/git/git.git --symref HEAD
 	cmdline := []string{
+		"-C",
+		dir,
 		"ls-remote",
 		"--symref",
 		repo.Remote,
