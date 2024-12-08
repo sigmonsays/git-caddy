@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"path/filepath"
 
 	gc "github.com/sigmonsays/git-caddy"
 )
@@ -16,13 +17,24 @@ func (me *CompiledRun) Append(ls []*CompiledRepository) {
 	log.Tracef("appended %d, total %d", len(ls), len(me.List))
 }
 
-// main entry point from cobra
+// main entry point from cobra for 'git-caddy run'
 func runRepositoryFile(opts *Options, configfile string, summary *RunSummary) error {
 	log.Infof("Load config %s", configfile)
 	cfg, err := LoadConfig(configfile)
 	if err != nil {
 		return err
 	}
+
+	abspath, err := filepath.Abs(configfile)
+	if err != nil {
+		return err
+	}
+	if opts.Dir == "" {
+		opts.Dir = filepath.Dir(abspath)
+		log.Debug("repofile %s: Defaulting dir to %s",
+			configfile, opts.Dir)
+	}
+	log.Debugf("runRepositoryFile %s (dir:%s)", configfile, opts.Dir)
 
 	run := &CompiledRun{}
 	err = compileRepositoryFile(opts, cfg, configfile, summary, run)
@@ -76,7 +88,7 @@ func CompileRepository(summary *RunSummary, opts *Options, cfg *gc.Config, run *
 	compile := &Compile{
 		Section:      opts.Section,
 		Cfg:          cfg,
-		WorkingDir:   opts.WorkingDir,
+		Dir:          opts.Dir,
 		Repositories: repos,
 		summary:      summary,
 	}

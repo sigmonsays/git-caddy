@@ -76,7 +76,8 @@ func ProcessRepo(jobid int, opts *Options, cfg *gc.Config, crepo *CompiledReposi
 	dlog := gologging.NewStandardLogger3(lvl, 5)
 	rlog := gologging.NewPrefixLogger(fmt.Sprintf("job%d %s: ", jobid, crepo.Repo.Name), dlog)
 
-	rlog.Debugf("Updating repo %s, remote:%s ", repo.Name, repo.Remote)
+	rlog.Debugf("Updating repo %s, remote:%s (workingdir:%s) ",
+		repo.Name, repo.Remote, crepo.WorkingDir)
 	defer func() {
 		done(err)
 		if err != nil {

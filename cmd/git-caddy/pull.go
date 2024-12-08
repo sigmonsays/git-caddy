@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -72,20 +71,6 @@ func (me *Pull) Run(ctx *gc.Context) (*PullResult, error) {
 	return ret, nil
 }
 
-func RepoCommand(prefix string, cfg *gc.Config, repo *gc.Repository, dir string, cmdline []string) error {
-	log.Tracef("repo command: %v", cmdline)
-	c := exec.Command(cmdline[0], cmdline[1:]...)
-	c.Stdout = NewPrefixWriter(os.Stdout, repo.Prefix(prefix))
-	c.Stderr = NewPrefixWriter(os.Stderr, repo.Prefix(prefix))
-	c.Dir = dir
-	c.Env = populateEnv(c.Env, cfg, repo)
-	err := c.Run()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 // get remote branch name
 func GetUpstreamBranch(cfg *gc.Config, repo *gc.Repository, dir string) (string, error) {
 	// git ls-remote https://github.com/git/git.git --symref HEAD
@@ -97,6 +82,7 @@ func GetUpstreamBranch(cfg *gc.Config, repo *gc.Repository, dir string) (string,
 		repo.Remote,
 		"HEAD",
 	}
+	log.Debug("GetUpstreamBranch cmdline %v", cmdline)
 	c := exec.Command("git", cmdline...)
 	c.Dir = dir
 	c.Env = populateEnv(c.Env, cfg, repo)
@@ -104,6 +90,7 @@ func GetUpstreamBranch(cfg *gc.Config, repo *gc.Repository, dir string) (string,
 	out, err := c.Output()
 	if err != nil {
 		log.Tracef("get_upstream_branch: [cmdline %s] error: %s\n", cmdline, err)
+		log.Tracef("get_upstream_branch out %s", out)
 		return "", nil
 	}
 	lines := strings.Split(string(out), "\n")
@@ -111,11 +98,16 @@ func GetUpstreamBranch(cfg *gc.Config, repo *gc.Repository, dir string) (string,
 		return "", fmt.Errorf("empty output")
 	}
 	line := lines[0]
+	log.Tracef("GetUpstreamBranch returned line %q", line)
 	tmp := strings.Fields(line)
 	if len(tmp) == 0 {
 		return "", fmt.Errorf("invalid output")
 	}
 	branch := filepath.Base(tmp[1])
+
+	if branch == "" {
+		log.Warnf("Unable to determine branch for repo %s", dir)
+	}
 
 	return branch, nil
 }
@@ -140,6 +132,9 @@ func GetLocalHash(cfg *gc.Config, repo *gc.Repository, dir, branch string) (stri
 }
 
 func GetRemoteHash(cfg *gc.Config, repo *gc.Repository, dir, branch string) (string, error) {
+	if branch == "" {
+		return "", fmt.Errorf("branch empty: branch required")
+	}
 	cmdline := []string{
 		"-C", dir,
 		"ls-remote",
