@@ -36,6 +36,14 @@ func (c *ManifestConfig) ListManifest() []*ManifestEntry {
 		for _, match := range matches {
 			sections := strings.Fields(e.Sections)
 			for _, section := range sections {
+				if e.WorkingDir == "" {
+					abs, err := filepath.Abs(match)
+					if err == nil {
+						e.WorkingDir = filepath.Dir(abs)
+						log.Debugf("manifest entry %s: Setting default workingdir to %s",
+							match, e.WorkingDir)
+					}
+				}
 				ent := &ManifestEntry{}
 				ent.Filename = match
 				ent.Section = section

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -12,10 +11,13 @@ import (
 )
 
 func populateEnv(e []string, cfg *gc.Config, r *gc.Repository) []string {
-	homedir := os.Getenv("HOME")
 
 	// set users home
-	e = append(e, fmt.Sprintf("HOME=%s", homedir))
+	// homedir := os.Getenv("HOME")
+	// e = append(e, fmt.Sprintf("HOME=%s", homedir))
+
+	gitconfigFile := "/home/sig/.git-caddy.gitconfig"
+	e = append(e, fmt.Sprintf("GIT_CONFIG_GLOBAL=%s", gitconfigFile))
 
 	if r.IdentityFile != "" {
 		e = env_ssh_command(cfg, r, e, r.IdentityFile)

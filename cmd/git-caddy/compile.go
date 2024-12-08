@@ -10,7 +10,7 @@ type Compile struct {
 	Section      string
 	Cfg          *gc.Config
 	Repositories []*gc.Repository
-	WorkingDir   string
+	Dir          string
 	summary      *RunSummary
 }
 
@@ -53,7 +53,7 @@ func (me *Compile) Run() ([]*CompiledRepository, error) {
 				repo2.Defaults()
 				log.Tracef("expanded repo %s", repo2.Remote)
 				crepo2 := &CompiledRepository{
-					WorkingDir: os.ExpandEnv(me.WorkingDir),
+					WorkingDir: os.ExpandEnv(me.Dir),
 					Repo:       repo2,
 					Cfg:        me.Cfg,
 				}
@@ -61,9 +61,9 @@ func (me *Compile) Run() ([]*CompiledRepository, error) {
 			}
 		} else {
 			crepo := &CompiledRepository{
-				WorkingDir: os.ExpandEnv(me.WorkingDir),
+				WorkingDir: os.ExpandEnv(me.Dir),
 				Repo:       repo,
-					Cfg:        me.Cfg,
+				Cfg:        me.Cfg,
 			}
 			ret = append(ret, crepo)
 		}

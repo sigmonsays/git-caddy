@@ -21,7 +21,7 @@ func CompileManifest(summary *RunSummary, opts *Options, cfg *gc.Config, run *Co
 		}
 		opts2 := opts.Clone()
 		opts2.Section = e.Section
-		opts2.WorkingDir = e.Def.WorkingDir
+		opts2.Dir = e.Def.WorkingDir
 
 		// merge identities together
 		cfg2.Identities = append(cfg2.Identities, cfg.Identities...)

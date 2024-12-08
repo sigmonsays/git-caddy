@@ -140,6 +140,9 @@ func GetLocalHash(cfg *gc.Config, repo *gc.Repository, dir, branch string) (stri
 }
 
 func GetRemoteHash(cfg *gc.Config, repo *gc.Repository, dir, branch string) (string, error) {
+	if branch == "" {
+		return "", fmt.Errorf("branch empty: branch required")
+	}
 	cmdline := []string{
 		"-C", dir,
 		"ls-remote",

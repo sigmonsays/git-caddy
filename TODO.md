@@ -1,10 +1,6 @@
-# TODO
+# Git Config param
 
-  
-- Implement logging to file on disk
-  - optional behavior, log only if parameter is in yaml
-  - use rotating logger, ability to set rotate sizes
+add insteadOf
 
-- show status of repositories and dont update
-  git-caddy status
+allow setting GIT_CONFIG_GLOBAL
 

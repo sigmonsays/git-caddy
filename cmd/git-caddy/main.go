@@ -67,11 +67,15 @@ func main() {
 		Use:   "discover",
 		Short: "discover repositories",
 		Run: func(cmd *cobra.Command, args []string) {
-			opts, err := ReadOptions(cmd, args)
+			// opts, err := ReadOptions(cmd, args)
+			// if err != nil {
+			// 	ExitError("ReadOptions: %s", err)
+			// }
+			wd, err := os.Getwd()
 			if err != nil {
-				ExitError("ReadOptions: %s", err)
+				ExitError("Getwd: %s", err)
 			}
-			err = doDiscovery(opts.WorkingDir)
+			err = doDiscovery(wd)
 			if err != nil {
 				ExitError("Discovery: %s", err)
 			}
@@ -94,7 +98,6 @@ func main() {
 	dopts := DefaultOptions()
 	rootCmd.PersistentFlags().StringP("loglevel", "l", dopts.LogLevel, "log level")
 	rootCmd.PersistentFlags().StringP("section", "s", dopts.Section, "section name")
-	rootCmd.PersistentFlags().StringP("workdir", "W", dopts.WorkingDir, "working directory")
 	rootCmd.PersistentFlags().Int32P("interval", "i", int32(dopts.UpdateInterval), "update interval")
 	rootCmd.PersistentFlags().BoolP("pretend", "p", dopts.Pretend, "pretend mode")
 
