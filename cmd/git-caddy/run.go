@@ -34,7 +34,7 @@ func runRepositoryFile(opts *Options, configfile string, summary *RunSummary) er
 		log.Debug("repofile %s: Defaulting dir to %s",
 			configfile, opts.Dir)
 	}
-	log.Infof("runRepositoryFile %s (dir:%s)", configfile, opts.Dir)
+	log.Debugf("runRepositoryFile %s (dir:%s)", configfile, opts.Dir)
 
 	run := &CompiledRun{}
 	err = compileRepositoryFile(opts, cfg, configfile, summary, run)
