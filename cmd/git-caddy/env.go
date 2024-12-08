@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -16,8 +17,14 @@ func populateEnv(e []string, cfg *gc.Config, r *gc.Repository) []string {
 	// homedir := os.Getenv("HOME")
 	// e = append(e, fmt.Sprintf("HOME=%s", homedir))
 
-	gitconfigFile := "/home/sig/.git-caddy.gitconfig"
-	e = append(e, fmt.Sprintf("GIT_CONFIG_GLOBAL=%s", gitconfigFile))
+	// gitconfigFile := "/home/sig/.git-caddy.gitconfig"
+	// e = append(e, fmt.Sprintf("GIT_CONFIG_GLOBAL=%s", gitconfigFile))
+
+	for k, v1 := range cfg.Env {
+		v := os.ExpandEnv(v1)
+		e = append(e, fmt.Sprintf("%s=%s", k, v))
+		log.Debugf("populateEnv %s=%s", k, v)
+	}
 
 	if r.IdentityFile != "" {
 		e = env_ssh_command(cfg, r, e, r.IdentityFile)

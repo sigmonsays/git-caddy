@@ -82,6 +82,7 @@ func GetUpstreamBranch(cfg *gc.Config, repo *gc.Repository, dir string) (string,
 		repo.Remote,
 		"HEAD",
 	}
+	log.Debug("GetUpstreamBranch cmdline %v", cmdline)
 	c := exec.Command("git", cmdline...)
 	c.Dir = dir
 	c.Env = populateEnv(c.Env, cfg, repo)
@@ -89,6 +90,7 @@ func GetUpstreamBranch(cfg *gc.Config, repo *gc.Repository, dir string) (string,
 	out, err := c.Output()
 	if err != nil {
 		log.Tracef("get_upstream_branch: [cmdline %s] error: %s\n", cmdline, err)
+		log.Tracef("get_upstream_branch out %s", out)
 		return "", nil
 	}
 	lines := strings.Split(string(out), "\n")
@@ -96,11 +98,16 @@ func GetUpstreamBranch(cfg *gc.Config, repo *gc.Repository, dir string) (string,
 		return "", fmt.Errorf("empty output")
 	}
 	line := lines[0]
+	log.Tracef("GetUpstreamBranch returned line %q", line)
 	tmp := strings.Fields(line)
 	if len(tmp) == 0 {
 		return "", fmt.Errorf("invalid output")
 	}
 	branch := filepath.Base(tmp[1])
+
+	if branch == "" {
+		log.Warnf("Unable to determine branch for repo %s", dir)
+	}
 
 	return branch, nil
 }
