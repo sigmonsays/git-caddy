@@ -9,6 +9,7 @@ import (
 )
 
 type Config struct {
+	Includes     []string                 `yaml:"includes"`
 	Concurrency  int                      `yaml:"concurrency"`
 	Verbose      bool                     `yaml:"verbose"`
 	Repositories map[string][]*Repository `yaml:"repositories"`
@@ -44,6 +45,21 @@ func (c *Config) LoadYaml(path string) error {
 
 	if err := c.FixupConfig(); err != nil {
 		return err
+	}
+
+	// process includes
+	for _, inc := range c.Includes {
+		b, err := os.ReadFile(inc)
+		if err != nil {
+			log.Warnf("ReadFile error: %w", err)
+			continue
+		}
+		err = c.LoadYamlBuffer(b)
+		if err != nil {
+			log.Warnf("LoadYamlBuffer error: %w", err)
+			continue
+		}
+
 	}
 
 	return nil
