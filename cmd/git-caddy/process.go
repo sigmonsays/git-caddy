@@ -71,6 +71,7 @@ func (me *ProcessRepositories) Run() error {
 	for _, res := range me.summary.Results {
 		row := []string{
 			res.Repo.Repo.Name,
+			res.Version,
 		}
 		tb.Append(row)
 	}
