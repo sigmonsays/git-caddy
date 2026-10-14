@@ -9,7 +9,7 @@ mkShell {
     gomod2nix
 
     # Go development
-    go_1_20
+    go_1_27
     gopls
     godef
     gotools

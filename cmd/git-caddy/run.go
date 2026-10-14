@@ -31,7 +31,7 @@ func runRepositoryFile(opts *Options, configfile string, summary *RunSummary) er
 	}
 	if opts.Dir == "" {
 		opts.Dir = filepath.Dir(abspath)
-		log.Debug("repofile %s: Defaulting dir to %s",
+		log.Debugf("repofile %s: Defaulting dir to %s",
 			configfile, opts.Dir)
 	}
 	log.Debugf("runRepositoryFile %s (dir:%s)", configfile, opts.Dir)
