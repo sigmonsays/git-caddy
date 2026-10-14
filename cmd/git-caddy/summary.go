@@ -24,6 +24,8 @@ type RunSummary struct {
 
 	started time.Time
 	stopped time.Time
+
+	Results []*ProcessResult
 }
 
 func (me *RunSummary) Start() {
@@ -51,4 +53,9 @@ func (me *RunSummary) IncrErrors() {
 	me.Do(func(sum *RunSummary) {
 		sum.Errors++
 	})
+}
+
+func (me *RunSummary) SaveResult(jobid int, res *ProcessResult) {
+	log.Debugf("SaveResult %d", jobid)
+	me.Results[jobid-1] = res
 }

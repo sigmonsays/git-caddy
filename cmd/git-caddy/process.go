@@ -7,6 +7,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/olekukonko/tablewriter"
 	gc "github.com/sigmonsays/git-caddy"
 	gologging "github.com/sigmonsays/go-logging"
 )
@@ -47,6 +48,10 @@ func (me *ProcessRepositories) Run() error {
 		wg.Done()
 	}
 
+	nresults := len(me.Repositories)
+
+	me.summary.Results = make([]*ProcessResult, nresults)
+
 	for i, crepo := range me.Repositories {
 		wg.Add(1)
 		ticket <- true
@@ -56,6 +61,23 @@ func (me *ProcessRepositories) Run() error {
 
 	wg.Wait()
 
+	// output table
+	tb := tablewriter.NewWriter(os.Stdout)
+	header := []string{
+		"REPO",
+		"VERSION",
+	}
+	tb.Header(header)
+	for _, res := range me.summary.Results {
+		row := []string{
+			res.Repo.Repo.Name,
+			res.Version,
+		}
+		tb.Append(row)
+	}
+	tb.Render()
+
+	// output any errors
 	if len(errors) == 0 {
 		log.Debugf("Finished with no errors")
 	} else {
@@ -64,12 +86,23 @@ func (me *ProcessRepositories) Run() error {
 			log.Warnf("error #%d: %s", i+1, err)
 		}
 	}
+
 	return nil
+}
+
+type ProcessResult struct {
+	Repo    *CompiledRepository
+	Version string
 }
 
 func ProcessRepo(jobid int, opts *Options, cfg *gc.Config, crepo *CompiledRepository, done func(error), summary *RunSummary) (err error) {
 	summary.IncrScanned()
 	repo := crepo.Repo
+
+	res := &ProcessResult{
+		Repo: crepo,
+	}
+	defer summary.SaveResult(jobid, res)
 
 	// create new log object
 	lvl, _ := gologging.LevelFromString(log.GetLevel())
@@ -158,11 +191,16 @@ func ProcessRepo(jobid int, opts *Options, cfg *gc.Config, crepo *CompiledReposi
 		}
 	}
 
-	status := &Status{cfg, repo}
+	status := &Status{
+		Cfg:  cfg,
+		Repo: repo,
+	}
 	err = status.Run(ctx)
 	if err != nil {
 		return err
 	}
+
+	res.Version = status.Version
 
 	rlog.Tracef("UpdateRepo %s: finished without error", repo.Name)
 	return nil
