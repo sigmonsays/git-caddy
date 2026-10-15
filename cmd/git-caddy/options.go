@@ -45,6 +45,9 @@ type Options struct {
 	Discover       bool
 	Version        bool
 	Pretend        bool
+
+	// only show the status of each repository, do not modify anything
+	StatusOnly bool
 }
 
 func (me *Options) Clone() *Options {
