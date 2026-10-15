@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"os"
 	"os/exec"
 	"strings"
@@ -46,7 +45,7 @@ func (me *Status) Run(ctx *gc.Context) error {
 	c.Stderr = NewPrefixWriter(os.Stderr, me.Repo.Prefix("describe"))
 	c.Dir = ctx.ResolvedWorkingDir
 	c.Env = populateEnv(c.Env, me.Cfg, me.Repo)
-	fmt.Printf("Dir %s\n", c.Dir)
+	// fmt.Printf("Dir %s\n", c.Dir)
 	err = c.Run()
 	if err == nil {
 		me.Version = strings.TrimRight(buf.String(), "\n")
