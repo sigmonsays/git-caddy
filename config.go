@@ -49,14 +49,14 @@ func (c *Config) LoadYaml(path string) error {
 
 	// process includes
 	for _, inc := range c.Includes {
-		b, err := os.ReadFile(inc)
+		b, err := os.ReadFile(ExpandPath(inc))
 		if err != nil {
-			log.Warnf("ReadFile error: %w", err)
+			log.Warnf("ReadFile error: %v", err)
 			continue
 		}
 		err = c.LoadYamlBuffer(b)
 		if err != nil {
-			log.Warnf("LoadYamlBuffer error: %w", err)
+			log.Warnf("LoadYamlBuffer error: %v", err)
 			continue
 		}
 
