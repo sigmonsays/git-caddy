@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -62,20 +63,11 @@ func (me *ProcessRepositories) Run() error {
 	wg.Wait()
 
 	// output table
-	tb := tablewriter.NewWriter(os.Stdout)
-	header := []string{
-		"REPO",
-		"VERSION",
+	if me.Opts.StatusOnly {
+		renderStatusTable(me.summary.Results)
+	} else {
+		renderRunTable(me.summary.Results)
 	}
-	tb.Header(header)
-	for _, res := range me.summary.Results {
-		row := []string{
-			res.Repo.Repo.Name,
-			res.Version,
-		}
-		tb.Append(row)
-	}
-	tb.Render()
 
 	// output any errors
 	if len(errors) == 0 {
@@ -90,9 +82,66 @@ func (me *ProcessRepositories) Run() error {
 	return nil
 }
 
+func renderRunTable(results []*ProcessResult) {
+	tb := tablewriter.NewWriter(os.Stdout)
+	header := []string{
+		"REPO",
+		"VERSION",
+	}
+	tb.Header(header)
+	for _, res := range results {
+		row := []string{
+			res.Repo.Repo.Name,
+			res.Version,
+		}
+		tb.Append(row)
+	}
+	tb.Render()
+}
+
+func renderStatusTable(results []*ProcessResult) {
+	tb := tablewriter.NewWriter(os.Stdout)
+	header := []string{
+		"REPO",
+		"BRANCH",
+		"VERSION",
+		"STATE",
+		"CHANGES",
+		"AHEAD",
+		"BEHIND",
+	}
+	tb.Header(header)
+	for _, res := range results {
+		row := []string{res.Repo.Repo.Name, "", "", "", "", "", ""}
+		st := res.Status
+		switch {
+		case res.Err != nil:
+			row[3] = "error"
+		case res.Exists == false:
+			row[3] = "missing"
+		case st != nil:
+			row[1] = st.Branch
+			row[2] = st.Version
+			row[3] = st.State()
+			row[4] = strconv.Itoa(st.Changes)
+			if st.HasUpstream {
+				row[5] = strconv.Itoa(st.Ahead)
+				row[6] = strconv.Itoa(st.Behind)
+			}
+		}
+		tb.Append(row)
+	}
+	tb.Render()
+}
+
 type ProcessResult struct {
 	Repo    *CompiledRepository
 	Version string
+
+	// populated in status only mode
+	Exists bool
+	Status *RepoStatus
+	Err    error
 }
 
 func ProcessRepo(jobid int, opts *Options, cfg *gc.Config, crepo *CompiledRepository, done func(error), summary *RunSummary) (err error) {
@@ -112,6 +161,7 @@ func ProcessRepo(jobid int, opts *Options, cfg *gc.Config, crepo *CompiledReposi
 	rlog.Debugf("Updating repo %s, remote:%s (workingdir:%s) ",
 		repo.Name, repo.Remote, crepo.WorkingDir)
 	defer func() {
+		res.Err = err
 		done(err)
 		if err != nil {
 			summary.IncrErrors()
@@ -142,6 +192,19 @@ func ProcessRepo(jobid int, opts *Options, cfg *gc.Config, crepo *CompiledReposi
 	ctx := &gc.Context{
 		RepoExists:         repoExists,
 		ResolvedWorkingDir: destination,
+	}
+	res.Exists = repoExists
+
+	if opts.StatusOnly {
+		if repoExists == false {
+			return nil
+		}
+		res.Status, err = CollectRepoStatus(cfg, repo, destination)
+		if err != nil {
+			return err
+		}
+		res.Version = res.Status.Version
+		return nil
 	}
 
 	if opts.Pretend {
