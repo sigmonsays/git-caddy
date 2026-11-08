@@ -18,7 +18,7 @@ func (me *Commit) ChangedLocally(dir string) (bool, error) {
 		"git", "diff-index", "--quiet", "HEAD", "--",
 	}
 	c := exec.Command(cmdline[0], cmdline[1:]...)
-	c.Stdout = NewPrefixWriter(os.Stdout, me.Repo.Prefix("commit"))
+	c.Stdout = NewPrefixWriter(cmdStdout, me.Repo.Prefix("commit"))
 	c.Stderr = NewPrefixWriter(os.Stderr, me.Repo.Prefix("commit"))
 	c.Dir = dir
 	c.Env = populateEnv(c.Env, me.Cfg, me.Repo)
@@ -60,7 +60,7 @@ func (me *Commit) Run(ctx *gc.Context) error {
 	log.Tracef("git commit %s", me.Repo.Name)
 	log.Tracef("git commit command %v", cmdline)
 	c := exec.Command(cmdline[0], cmdline[1:]...)
-	c.Stdout = NewPrefixWriter(os.Stdout, me.Repo.Prefix("commit"))
+	c.Stdout = NewPrefixWriter(cmdStdout, me.Repo.Prefix("commit"))
 	c.Stderr = NewPrefixWriter(os.Stderr, me.Repo.Prefix("commit"))
 	c.Dir = ctx.ResolvedWorkingDir
 	c.Env = populateEnv(c.Env, me.Cfg, me.Repo)

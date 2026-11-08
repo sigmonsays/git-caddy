@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -63,9 +64,20 @@ func (me *ProcessRepositories) Run() error {
 	wg.Wait()
 
 	// output table
-	if me.Opts.StatusOnly {
+	switch {
+	case me.Opts.StatusOnly && me.Opts.Json:
+		err := renderStatusJson(me.summary.Results)
+		if err != nil {
+			return err
+		}
+	case me.Opts.StatusOnly:
 		renderStatusTable(me.summary.Results)
-	} else {
+	case me.Opts.Json:
+		err := renderRunJson(me.summary.Results)
+		if err != nil {
+			return err
+		}
+	default:
 		renderRunTable(me.summary.Results)
 	}
 
@@ -99,6 +111,81 @@ func renderRunTable(results []*ProcessResult) {
 	tb.Render()
 }
 
+// a single row of run output
+type RunRow struct {
+	Name    string `json:"name"`
+	Version string `json:"version"`
+	Changed bool   `json:"changed"`
+	Error   string `json:"error,omitempty"`
+}
+
+func renderRunJson(results []*ProcessResult) error {
+	rows := make([]*RunRow, 0, len(results))
+	for _, res := range results {
+		row := &RunRow{
+			Name:    res.Repo.Repo.Name,
+			Version: res.Version,
+			Changed: res.Changed,
+		}
+		if res.Err != nil {
+			row.Error = res.Err.Error()
+		}
+		rows = append(rows, row)
+	}
+	return writeJson(rows)
+}
+
+func writeJson(v any) error {
+	enc := json.NewEncoder(os.Stdout)
+	enc.SetIndent("", "  ")
+	return enc.Encode(v)
+}
+
+// a single row of status output
+type StatusRow struct {
+	Name    string `json:"name"`
+	Branch  string `json:"branch"`
+	Version string `json:"version"`
+	State   string `json:"state"`
+	Changes int    `json:"changes"`
+
+	// nil if there is no upstream branch
+	Ahead  *int `json:"ahead"`
+	Behind *int `json:"behind"`
+
+	Error string `json:"error,omitempty"`
+}
+
+func NewStatusRow(res *ProcessResult) *StatusRow {
+	row := &StatusRow{Name: res.Repo.Repo.Name}
+	st := res.Status
+	switch {
+	case res.Err != nil:
+		row.State = "error"
+		row.Error = res.Err.Error()
+	case res.Exists == false:
+		row.State = "missing"
+	case st != nil:
+		row.Branch = st.Branch
+		row.Version = st.Version
+		row.State = st.State()
+		row.Changes = st.Changes
+		if st.HasUpstream {
+			row.Ahead = &st.Ahead
+			row.Behind = &st.Behind
+		}
+	}
+	return row
+}
+
+func renderStatusJson(results []*ProcessResult) error {
+	rows := make([]*StatusRow, 0, len(results))
+	for _, res := range results {
+		rows = append(rows, NewStatusRow(res))
+	}
+	return writeJson(rows)
+}
+
 func renderStatusTable(results []*ProcessResult) {
 	tb := tablewriter.NewWriter(os.Stdout)
 	header := []string{
@@ -112,22 +199,14 @@ func renderStatusTable(results []*ProcessResult) {
 	}
 	tb.Header(header)
 	for _, res := range results {
-		row := []string{res.Repo.Repo.Name, "", "", "", "", "", ""}
-		st := res.Status
-		switch {
-		case res.Err != nil:
-			row[3] = "error"
-		case res.Exists == false:
-			row[3] = "missing"
-		case st != nil:
-			row[1] = st.Branch
-			row[2] = st.Version
-			row[3] = st.State()
-			row[4] = strconv.Itoa(st.Changes)
-			if st.HasUpstream {
-				row[5] = strconv.Itoa(st.Ahead)
-				row[6] = strconv.Itoa(st.Behind)
-			}
+		r := NewStatusRow(res)
+		row := []string{r.Name, r.Branch, r.Version, r.State, "", "", ""}
+		if r.State == "clean" || r.State == "modified" {
+			row[4] = strconv.Itoa(r.Changes)
+		}
+		if r.Ahead != nil {
+			row[5] = strconv.Itoa(*r.Ahead)
+			row[6] = strconv.Itoa(*r.Behind)
 		}
 		tb.Append(row)
 	}
@@ -137,6 +216,9 @@ func renderStatusTable(results []*ProcessResult) {
 type ProcessResult struct {
 	Repo    *CompiledRepository
 	Version string
+
+	// true if a pull changed the repository
+	Changed bool
 
 	// populated in status only mode
 	Exists bool
@@ -237,6 +319,7 @@ func ProcessRepo(jobid int, opts *Options, cfg *gc.Config, crepo *CompiledReposi
 			if pres.Changed {
 				summary.Changed += 1
 			}
+			res.Changed = pres.Changed
 		} else {
 			return err
 		}
