@@ -41,6 +41,7 @@ func main() {
 			}
 		},
 	}
+	runCmd.Flags().BoolP("json", "j", false, "output json")
 	rootCmd.AddCommand(runCmd)
 
 	var statusCmd = &cobra.Command{
@@ -62,6 +63,7 @@ func main() {
 			}
 		},
 	}
+	statusCmd.Flags().BoolP("json", "j", false, "output json")
 	rootCmd.AddCommand(statusCmd)
 
 	var loopCmd = &cobra.Command{

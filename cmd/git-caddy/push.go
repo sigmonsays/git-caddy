@@ -24,7 +24,7 @@ func (me *Push) Run(ctx *gc.Context) error {
 
 	log.Tracef("git push command %v", cmdline)
 	c := exec.Command(cmdline[0], cmdline[1:]...)
-	c.Stdout = NewPrefixWriter(os.Stdout, me.Repo.Prefix("push"))
+	c.Stdout = NewPrefixWriter(cmdStdout, me.Repo.Prefix("push"))
 	c.Stderr = NewPrefixWriter(os.Stderr, me.Repo.Prefix("push"))
 	c.Dir = ctx.ResolvedWorkingDir
 	c.Env = populateEnv(c.Env, me.Cfg, me.Repo)

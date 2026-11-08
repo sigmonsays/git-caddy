@@ -26,7 +26,7 @@ func (me *Status) Run(ctx *gc.Context) error {
 	log.Tracef("git status %s", me.Repo.Name)
 	log.Tracef("git status command %v", cmdline)
 	c := exec.Command(cmdline[0], cmdline[1:]...)
-	c.Stdout = NewPrefixWriter(os.Stdout, me.Repo.Prefix("status"))
+	c.Stdout = NewPrefixWriter(cmdStdout, me.Repo.Prefix("status"))
 	c.Stderr = NewPrefixWriter(os.Stderr, me.Repo.Prefix("status"))
 	c.Dir = ctx.ResolvedWorkingDir
 	c.Env = populateEnv(c.Env, me.Cfg, me.Repo)
