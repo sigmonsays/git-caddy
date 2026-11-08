@@ -41,7 +41,30 @@ func main() {
 			}
 		},
 	}
+	runCmd.Flags().BoolP("json", "j", false, "output json")
 	rootCmd.AddCommand(runCmd)
+
+	var statusCmd = &cobra.Command{
+		Use:   "status",
+		Short: "show status of each repository in config file",
+		Run: func(cmd *cobra.Command, args []string) {
+			summary := NewRunSummary()
+			summary.Start()
+			defer FinishSummary(summary)
+			opts, err := ReadOptions(cmd, args)
+			if err != nil {
+				ExitError("ReadOptions: %s", err)
+			}
+			opts.StatusOnly = true
+
+			if gc.FileExists(opts.ConfigFile) {
+				err := runRepositoryFile(opts, opts.ConfigFile, summary)
+				ExitIfError(err, "status %s: %s", opts.ConfigFile, err)
+			}
+		},
+	}
+	statusCmd.Flags().BoolP("json", "j", false, "output json")
+	rootCmd.AddCommand(statusCmd)
 
 	var loopCmd = &cobra.Command{
 		Use:   "loop",

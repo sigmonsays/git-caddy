@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	gologging "github.com/sigmonsays/go-logging"
 	"github.com/spf13/cobra"
 )
@@ -22,6 +24,12 @@ func ReadOptions(cmd *cobra.Command, args []string) (*Options, error) {
 	opts.LogLevel, _ = cmd.Flags().GetString("loglevel")
 	opts.UpdateInterval, _ = cmd.Flags().GetInt32("interval")
 	opts.Pretend, _ = cmd.Flags().GetBool("pretend")
+	// only defined on some commands
+	opts.Json, _ = cmd.Flags().GetBool("json")
+
+	if opts.Json {
+		cmdStdout = os.Stderr
+	}
 
 	if opts.LogLevel != "" {
 		gologging.SetLogLevel(opts.LogLevel)
@@ -45,6 +53,12 @@ type Options struct {
 	Discover       bool
 	Version        bool
 	Pretend        bool
+
+	// only show the status of each repository, do not modify anything
+	StatusOnly bool
+
+	// output json instead of a table
+	Json bool
 }
 
 func (me *Options) Clone() *Options {

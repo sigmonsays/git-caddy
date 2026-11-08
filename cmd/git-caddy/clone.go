@@ -31,7 +31,7 @@ func (me *Clone) Run(ctx *gc.Context) error {
 
 	log.Tracef("git clone command %v", cmdline)
 	c := exec.Command(cmdline[0], cmdline[1:]...)
-	c.Stdout = NewPrefixWriter(os.Stdout, me.Repo.Prefix("clone"))
+	c.Stdout = NewPrefixWriter(cmdStdout, me.Repo.Prefix("clone"))
 	c.Stderr = NewPrefixWriter(os.Stderr, me.Repo.Prefix("clone"))
 	c.Env = populateEnv(c.Env, me.Cfg, me.Repo)
 
